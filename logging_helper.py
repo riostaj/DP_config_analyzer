@@ -24,21 +24,6 @@ def send_report(report_list):
 
 	for report in report_list:
 
-		if report == 'low_bdos_baselines.csv':
-			#Send bdos baselines report only if there are entries in CSV
-			statinfo = os.stat('low_bdos_baselines.csv')
-			if statinfo.st_size > 101: #send report only if there are values (101 bytes are only headers)
-				logging.info('sending low_bdos_baselines by email')
-
-				dir, filename = os.path.split(report)
-				attachment = open(report, "rb")
-				p = MIMEBase('application', 'octet-stream')
-				p.set_payload((attachment).read())
-				encoders.encode_base64(p)
-				p.add_header('Content-Disposition', "attachment; filename= %s" % filename)
-				msg.attach(p)
-				attachment.close()
-
 		if report == 'dpconfig_report.csv':
 			statinfo = os.stat('dpconfig_report.csv')
 			if statinfo.st_size > 51: #send report only if there are entries (51 bytes are only headers)

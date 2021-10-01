@@ -3,8 +3,6 @@ import glob
 import os
 
 reports_path = "./Reports/"
-raw_data_path = "./Raw Data/"
-requests_path = "./Requests/"
 
 class DataParser():
 	def __init__(self, full_pol_dic, full_sig_dic, full_net_dic, full_bdosprofconf_dic):
