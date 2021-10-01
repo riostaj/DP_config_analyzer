@@ -6,7 +6,9 @@ import time
 from logging_helper import logging
 
 
-
+reports_path = "./Reports/"
+raw_data_path = "./Raw Data/"
+requests_path = "./Requests/"
 
 class Vision:
 
@@ -23,16 +25,17 @@ class Vision:
 
 		self.report_duration = self.epochTimeGenerator(cfg.DURATION)
 
-		with open('BDOStrafficRequest.json') as outfile:
+		with open(requests_path + 'BDOStrafficRequest.json') as outfile:
 			self.BDOSformatRequest = json.load(outfile)
-		with open('DNStrafficRequest.json') as dnstrafficrequest:
+		with open(requests_path + 'DNStrafficRequest.json') as dnstrafficrequest:
 			self.DNSformatRequest = json.load(dnstrafficrequest)
-		with open('TrafficRequest.json') as trafficrequest:
+		with open(requests_path + 'TrafficRequest.json') as trafficrequest:
 			self.trafficformatrequest = json.load(trafficrequest)
-		with open('TrafficRequestCPS.json') as trafficrequestCPS:
+		with open(requests_path + 'TrafficRequestCPS.json') as trafficrequestCPS:
 			self.trafficformatrequestCPS = json.load(trafficrequestCPS)
-		with open('TrafficRequestCEC.json') as trafficrequestcec:
+		with open(requests_path + 'TrafficRequestCEC.json') as trafficrequestcec:
 			self.trafficformatrequestcec = json.load(trafficrequestcec)
+
 	def login(self):
 		logging.info('Start connecting to Vision')
 		login_url = self.base_url + '/mgmt/system/user/login'
@@ -257,7 +260,7 @@ class Vision:
 				r = self.sess.post(url = url, json = self.DNSformatRequest , verify=False)
 				jsonData = json.loads(r.text)
 				
-				print(f'{pol_dp_ip}, policy {pol_name} - executing DNS IPv6 query')
+				# print(f'{pol_dp_ip}, policy {pol_name} - executing DNS IPv6 query')
 
 				dnsReportList.append(jsonData['data'])
 
@@ -268,7 +271,7 @@ class Vision:
 				r = self.sess.post(url = url, json = self.DNSformatRequest , verify=False)
 				jsonData = json.loads(r.text)
 				
-				print(f'{pol_dp_ip}, policy {pol_name} - executing DNS IPv4 query')
+				# print(f'{pol_dp_ip}, policy {pol_name} - executing DNS IPv4 query')
 				
 				dnsReportList.append(jsonData['data'])				
 
@@ -335,9 +338,6 @@ class Vision:
 	
 		trafficreportlistcps = {policy:jsonData['data']}
 
-		# with open('traffic_query_cps.txt', 'w') as f:
-		# 	f.write(str(trafficreportlistcps))
-
 		return trafficreportlistcps
 
 ############################################
@@ -354,9 +354,6 @@ class Vision:
 	
 		trafficreportlistcec = jsonData['data']
 
-		# with open('traffic_query_cec.txt', 'w') as f:
-		# 	f.write(str(trafficreportlistcec))
-
 		return trafficreportlistcec
 
 	def getFullPolicyDictionary(self):
@@ -369,7 +366,7 @@ class Vision:
 			full_pol_dic[key]['Version'] = val['Version']
 			full_pol_dic[key]['Policies'] = self.getPolicyListByDevice(key)
 		
-		with open('full_pol_dic.json', 'w') as full_pol_dic_file:
+		with open(raw_data_path + 'full_pol_dic.json', 'w') as full_pol_dic_file:
 			json.dump(full_pol_dic,full_pol_dic_file)
 
 		return full_pol_dic
@@ -380,7 +377,7 @@ class Vision:
 		for key in self.device_list:
 			full_sig_dic[key] = self.getSignatureProfileListByDevice(key)
 		
-		with open('full_sig_dic.json', 'w') as full_sig_dic_file:
+		with open(raw_data_path + 'full_sig_dic.json', 'w') as full_sig_dic_file:
 			json.dump(full_sig_dic,full_sig_dic_file)
 			
 		return full_sig_dic
@@ -392,7 +389,7 @@ class Vision:
 		for key in self.device_list:
 			full_net_dic[key] = self.getNetClassListByDevice(key)
 
-		with open('full_net_dic.json', 'w') as full_net_dic_file:
+		with open(raw_data_path + 'full_net_dic.json', 'w') as full_net_dic_file:
 			json.dump(full_net_dic,full_net_dic_file)
 			
 		return full_net_dic
@@ -407,7 +404,7 @@ class Vision:
 			full_bdosprofconf_dic[key]['Version'] = val['Version']
 			full_bdosprofconf_dic[key]['Policies'] = self.getBDOSProfileConfigByDevice(key)
 		
-		with open('full_bdosprofconf_dic.json', 'w') as full_bdosprofconf_dic_file:
+		with open(raw_data_path + 'full_bdosprofconf_dic.json', 'w') as full_bdosprofconf_dic_file:
 			json.dump(full_bdosprofconf_dic,full_bdosprofconf_dic_file)
 
 		return full_bdosprofconf_dic
