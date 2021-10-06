@@ -1,6 +1,4 @@
 import csv
-import glob
-import os
 
 reports_path = "./Reports/"
 
@@ -460,5 +458,3 @@ class DataParser():
 				lowest_priority = min(priorities_lst)
 
 		return lowest_priority
-#---------------------------
-#1. Connlim - for each policy - get connlim numbers (working with config)

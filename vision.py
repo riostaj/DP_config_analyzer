@@ -1,8 +1,6 @@
-import config as cfg
 from requests import Session
 import requests
 import json
-import time
 from logging_helper import logging
 
 
@@ -18,8 +16,6 @@ class Vision:
 		self.sess.headers.update({"Content-Type": "application/json"})
 		self.login()
 		self.device_list = self.getDeviceList()
-		# self.last_24_hours = self.epochTimeGenerator(1)
-		# self.last_week = self.epochTimeGenerator(7)
 
 	def login(self):
 		logging.info('Start connecting to Vision')

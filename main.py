@@ -3,7 +3,6 @@ import json
 from vision import Vision
 from dpconfig_parser import DataParser
 import urllib3
-
 import logging_helper
 import sys
 
