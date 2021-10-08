@@ -1,4 +1,5 @@
 import csv
+import logging_helper
 
 reports_path = "./Reports/"
 
@@ -182,7 +183,10 @@ class DataParser():
 				self.v7CountInstance(dp_name, dp_ip, dp_attr['Policies']['rsIDSNewRulesTable'])
 
 		report = reports_path + 'dpconfig_report.csv'
+		logging_helper.logging.info('Data parsing is complete')
+		print('Data parsing is complete')
 		return report
+
 
 
 	def initParser(self, dp_ip):
@@ -340,13 +344,19 @@ class DataParser():
 						if bdos_prof_name == pol_prof_name:
 							bdos_count +=1
 							
-							if 'rsNetFloodProfileAction' in bdos_prof:
-								if bdos_prof['rsNetFloodProfileAction'] == "0":
+							if 'rsNetFloodProfileAction' in bdos_prof: #BDOS protection status (Block/Report)
+								if bdos_prof['rsNetFloodProfileAction'] == "0": # 0 = Report
 									# print(f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" is in Report-Only mode')
 									with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
 										bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 										bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" is in Report-Only mode'])
 
+							if 'rsNetFloodProfileFootprintStrictness' in bdos_prof: #BDOS Strictness
+								if bdos_prof['rsNetFloodProfileFootprintStrictness'] != "1": # 0= Low, 1 = Medium, 2 = Hight
+									# print(f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" Strictness is not Medium')
+									with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+										bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+										bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" Footprint Strictness is not Medium'])
 						else:
 							nomatch = True
 

@@ -15,10 +15,14 @@ class Vision:
 		self.sess = Session()
 		self.sess.headers.update({"Content-Type": "application/json"})
 		self.login()
+		logging.info('Connecting to Vision')
+		print('Connecting to Vision')
 		self.device_list = self.getDeviceList()
+		logging.info('Collecting DefensePro device list')
+		print('Collecting DefensePro device list')
 
 	def login(self):
-		logging.info('Start connecting to Vision')
+
 		login_url = self.base_url + '/mgmt/system/user/login'
 		try:
 			r = self.sess.post(url=login_url, json=self.login_data, verify=False)
