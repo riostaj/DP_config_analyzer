@@ -357,6 +357,15 @@ class DataParser():
 									with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
 										bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 										bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" Footprint Strictness is not Medium'])
+							if 'rsNetFloodProfileLearningSuppressionThreshold' in bdos_prof: #BDOS Learning suppression
+								if int(bdos_prof['rsNetFloodProfileLearningSuppressionThreshold']) < 50: #Less than 50%
+									# print(f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" Learning suppression is set to ' + bdos_prof['rsNetFloodProfileLearningSuppressionThreshold'] + '%. Recommended setting is 50%')
+									with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+										bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+										bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" Learning suppression is less than 50%'])
+
+
+
 						else:
 							nomatch = True
 

@@ -13,7 +13,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 #Arguments variables
 
 getdatafromvision = True
-alarm = True
+email = False
 test_email_alarm = False
 report = []
 
@@ -30,15 +30,17 @@ for i in sys.argv:
 		#No data collection from vision- running script using previously collected data
 		getdatafromvision = False
 		logging_helper.logging.info('Running script using cache data only')
+		print('Running script using cache data only')
 		
-	if i.lower() == "--no-alarm":
-		#Run script without sending email alert.
-		alarm = False
-		logging_helper.logging.info('Running script without email alarm')
-
-	if i.lower() == "--test-alarm":
-		#Run script- test email alert only
-		logging_helper.logging.info('Running script to test email alarm only')
+	if i.lower() == "--email":
+		#Run script and send report by email.
+		email = True
+		logging_helper.logging.info('Running script with sending email argument')
+		print('Running script with sending email argument')
+	if i.lower() == "--test-email":
+		#Run script- test sending email only
+		logging_helper.logging.info('Running script with test email argument')
+		print('Running script with test email argument')
 		getdatafromvision = False
 		test_email_alarm = True
 		nobdosreport = True
@@ -87,5 +89,5 @@ report.append(DataParser(full_pol_dic,full_sig_dic,full_net_dic,full_bdosprofcon
 if test_email_alarm:
 	report = ['test']
 
-if alarm:
+if email:
 	logging_helper.send_report(report)
