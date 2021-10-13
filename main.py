@@ -5,6 +5,7 @@ from dpconfig_parser import DataParser
 import urllib3
 import logging_helper
 import sys
+import os
 
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -19,6 +20,15 @@ report = []
 
 raw_data_path = "./Raw Data/"
 
+if not os.path.exists('log'):
+	os.makedirs('log')
+
+if not os.path.exists('Raw Data'):
+	os.makedirs('Raw Data')
+
+if not os.path.exists('Reports'):
+	os.makedirs('Reports')
+	
 
 logging_helper.log_setup(cfg.LOG_FILE_PATH, cfg.SYSLOG_SERVER, cfg.SYSLOG_PORT)
 
@@ -37,6 +47,7 @@ for i in sys.argv:
 		email = True
 		logging_helper.logging.info('Running script with sending email argument')
 		print('Running script with sending email argument')
+
 	if i.lower() == "--test-email":
 		#Run script- test sending email only
 		logging_helper.logging.info('Running script with test email argument')
