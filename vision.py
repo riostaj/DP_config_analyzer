@@ -2,9 +2,11 @@ from requests import Session
 import requests
 import json
 from logging_helper import logging
-
+import config as cfg
 
 raw_data_path = "./Raw Data/"
+config_path = "./Config/"
+
 
 class Vision:
 
@@ -19,7 +21,7 @@ class Vision:
 		print('Connecting to Vision')
 		self.device_list = self.getDeviceList()
 		logging.info('Collecting DefensePro device list')
-		print('Collecting DefensePro device list')
+		print('Collecting DefensePro device list')		
 
 	def login(self):
 
@@ -100,7 +102,27 @@ class Vision:
 			return []
 
 		return policy_list
-	
+
+	def getDPConfigByDevice(self, dp_ip):
+		# Downloads DefensePro configuration file
+		policy_url = self.base_url + "/mgmt/device/byip/" + \
+			dp_ip + "/config/getcfg?saveToDb=false&includePrivateKeys=false&passphrase="
+		# URL params ?count=1000&props=rsIDSNewRulesName
+		r = self.sess.get(url=policy_url, verify=False)
+
+		with open(config_path + f'{dp_ip}_config.txt', 'wb') as f:
+			f.write(r.content) #Write to file
+
+		return
+
+
+	def getAllDPConfigs(self):
+		# Download DefensePro configuration file for all DefensePro
+
+		for key in self.device_list:
+			self.getDPConfigByDevice(key)
+		
+		return
 
 	def getFullPolicyDictionary(self):
 		# Create Full Policies list with attributes dictionary per DefensePro
@@ -132,12 +154,14 @@ class Vision:
 		# Create Full Network class profile list with networks dictionary per DefensePro
 
 		full_net_dic = {}
-		for key in self.device_list:
+		for key,value in self.device_list.items():
+	
 			full_net_dic[key] = self.getNetClassListByDevice(key)
-
+			full_net_dic[key]['Name'] = value['Name']
+			
 		with open(raw_data_path + 'full_net_dic.json', 'w') as full_net_dic_file:
 			json.dump(full_net_dic,full_net_dic_file)
-			
+		
 		return full_net_dic
 
 	def getFullBDOSProfConfigDictionary(self):

@@ -1,7 +1,10 @@
 import csv
 import logging_helper
+import config as cfg
+import ipaddress
 
 reports_path = "./Reports/"
+config_path = "./Config/"
 
 class DataParser():
 	def __init__(self, full_pol_dic, full_sig_dic, full_net_dic, full_bdosprofconf_dic):
@@ -162,7 +165,7 @@ class DataParser():
 			
 
 			self.checkBDOSProf( dp_ip, dp_name, dp_attr['Policies']['rsIDSNewRulesTable'], self.full_bdosprofconf_dic)
-
+			
 				
 
 
@@ -181,6 +184,11 @@ class DataParser():
 
 			if dp_version == 7: # Check if DP v7.x has unequal instance distribution across the policies
 				self.v7CountInstance(dp_name, dp_ip, dp_attr['Policies']['rsIDSNewRulesTable'])
+
+			self.parseDPConfig(dp_ip, dp_name) #Perform DP config files checks
+
+		self.netClassDuplication(self.full_net_dic, self.full_pol_dic) #Check if network class is unused, shared, duplicate or subnet of another class
+
 
 		report = reports_path + 'dpconfig_report.csv'
 		logging_helper.logging.info('Data parsing is complete')
@@ -476,3 +484,274 @@ class DataParser():
 				lowest_priority = min(priorities_lst)
 
 		return lowest_priority
+
+	def parseDPConfig(self, dp_ip, dp_name):
+		#Parse DP config file for best practice configuration
+	##########Normalize config file############
+		with open(config_path + f'{dp_ip}_config.txt', 'r') as f:
+			config = f.read()
+		
+			config = config.replace('\\'"\n","") #Normalize splitted lines (\\\r\n)
+
+		with open(config_path + f'{dp_ip}_config.txt', 'w') as f:
+			f.write(config) #Write updated lines
+	############################################
+
+
+		with open(config_path + f'{dp_ip}_config.txt') as f:
+			
+			content = f.read()
+
+			if "\"status\":\"error\"" in content:
+				print(f'{dp_name} - Error downloading configuration file - {content}')
+				logging_helper.logging.info(f'{dp_name} - Error downloading configuration file - {content}')
+				with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+					bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+					bdos_writer.writerow([f'{dp_name}' , f'{dp_ip}' , f'N/A' , f'{dp_name} - Error downloading configuration file - {content}'])
+	
+			if "!Software Version: 8" in content: # For software versions other than 8.x
+				if "manage web-services status set enable" in content:
+					print(f'{dp_ip} Web-services access is enabled. In most cases this service is required for external automation through SOAP calls. Disable if unnecessary. To disable - > "manage web-services status set disable"')
+					with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+						bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+						bdos_writer.writerow([f'{dp_name}' , f'{dp_ip}' , f'N/A' , f'Web-services access is enabled. In most cases this service is required for external automation through SOAP calls. Disable if unnecessary. To disable - > "manage web-services status set disable"'])
+
+
+			if not "!Software Version: 8" in content: # For software versions other than 8.x
+				# print(dp_ip +' is not v8.x')
+				if "manage web status set enable" in content:
+					# print(f'{dp_ip} HTTP Access on port 80 is enabled. To disable - > "manage web status set disable"')
+					with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+						bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+						bdos_writer.writerow([f'{dp_name}' , f'{dp_ip}' , f'N/A' , f'HTTP Access on port 80 is enabled. To disable - > "manage web status set disable"'])
+
+
+			if "manage ssh session-timeout set" not in content:
+				# print(f'{dp_ip} - SSH Timeout is set to default (v8.x 10 min, v6.x 5 min). Recommended timeout is {str(cfg.SSH_TIMEOUT)} min. To set SSH timeout -> manage ssh session-timeout set 120')
+				with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+					bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+					bdos_writer.writerow([f'{dp_name}' , f'{dp_ip}' , f'N/A' , f'SSH Timeout is set to default (v8.x 10 min, v6.x 5 min). Recommended timeout is {str(cfg.SSH_TIMEOUT)} min. To set SSH timeout -> manage ssh session-timeout set {str(cfg.SSH_TIMEOUT)}'])
+		
+			if "services auditing status set Enabled" not in content:
+				# print(f'{dp_name} - Service auditing is not enabled. To enable -> services auditing status set enable')
+
+				with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+					bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+					bdos_writer.writerow([f'{dp_name}' , f'{dp_ip}' , f'N/A' , f'Service auditing is not enabled. To enable -> services auditing status set enable'])
+
+			if "services auditing type set Extended" not in content:
+				# print(f'{dp_name} - Extended service auditing is not enabled. To enable -> services auditing type set Extended')
+
+				with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+					bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+					bdos_writer.writerow([f'{dp_name}' , f'{dp_ip}' , f'N/A' , f'Extended service auditing is not enabled. To enable -> services auditing type set Extended'])
+
+
+			if "manage telnet status set enable" in content:
+				# print(f'{dp_ip} Telnet Access on port 23 is enabled. To disable - > "manage telnet status set disable"')
+				with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+					bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+					bdos_writer.writerow([f'{dp_name}' , f'{dp_ip}' , f'N/A' , f'Telnet Access on port 23 is enabled. To disable - > "manage telnet status set disable"'])
+
+			f.seek(0) #back to first line to parse line by line
+
+			for line in f:
+				if "manage ssh session-timeout set" in line and f'manage ssh session-timeout set {str(cfg.SSH_TIMEOUT)}' not in line:
+					# print(f'{dp_ip} - SSH timeout is set to -' + str(line.split()[4]) + f' minutes. Recommended SSH timeout is {str(cfg.SSH_TIMEOUT)} min. To set SSH timeout -> manage ssh session-timeout set 120')
+					with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+						bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+						bdos_writer.writerow([f'{dp_name}' , f'{dp_ip}' , f'N/A' , f'SSH timeout is set to ' + str(line.split()[4]) + f' minutes. Recommended SSH timeout is {str(cfg.SSH_TIMEOUT)} min. To set SSH timeout -> manage ssh session-timeout set {str(cfg.SSH_TIMEOUT)}'])
+
+	
+		return
+
+	def netClassDuplication(self, full_net_dic, full_pol_dic):
+
+		uniq_net_name_dic = {}
+
+		for net_dic_dp_ip,net_dic_dp_ip_attr in full_net_dic.items():
+		#Create unique list of network class names in order to identify orphaned network classes later one
+			
+			uniq_net_name_dic[net_dic_dp_ip] = {}
+			uniq_net_name_dic[net_dic_dp_ip]['Name'] = net_dic_dp_ip_attr['Name']
+			uniq_net_name_dic[net_dic_dp_ip]['Policies'] = []
+
+
+			if net_dic_dp_ip_attr == ([]):
+				#if unreachable do not perform other tests
+				continue
+
+			for net in net_dic_dp_ip_attr['rsBWMNetworkTable']:
+				net_name = net['rsBWMNetworkName']
+				if net_name != 'any' and net_name != 'any_ipv4' and net_name != 'any_ipv6' and net_name not in uniq_net_name_dic[net_dic_dp_ip]['Policies']:
+					uniq_net_name_dic[net_dic_dp_ip]['Policies'].append(net_name)
+
+
+		###########################Check unused or shared network classes across policies###############
+
+		for unique_name_dic_dp_ip,unique_net_dic_attr in uniq_net_name_dic.items():
+			#Check unused network classes
+			unique_dp_name = unique_net_dic_attr['Name']
+			
+
+			for net in unique_net_dic_attr['Policies']:
+				timesfound = 0 
+
+				for pol_dic_dp_ip,pol_dic_dp_ip_attr in full_pol_dic.items():
+
+					pol_dic_dp_name = pol_dic_dp_ip_attr['Name']
+
+					if pol_dic_dp_ip_attr['Policies'] == ([]):
+						#if unreachable
+						continue
+
+					if pol_dic_dp_ip_attr['Policies'] == ({'rsIDSNewRulesTable': []}):
+						#if no policies
+						continue
+
+					if unique_name_dic_dp_ip == pol_dic_dp_ip:
+						pol_count_list = []
+
+						for pol_attr in pol_dic_dp_ip_attr['Policies']['rsIDSNewRulesTable']:
+							pol_dic_pol_name = pol_attr['rsIDSNewRulesName']
+							pol_dic_src = pol_attr['rsIDSNewRulesSource']
+							pol_dic_dst = pol_attr['rsIDSNewRulesDestination']
+							if net != 'any' and net != 'any_ipv4' and net != 'any_ipv6':
+								
+								if net == pol_dic_src:
+									timesfound +=1
+									pol_count_list.append(pol_dic_pol_name)
+			
+								if net == pol_dic_dst:
+									timesfound +=1
+									pol_count_list.append(pol_dic_pol_name)
+
+
+
+				if timesfound == 0 and net != 'any' and net != 'any_ipv4' and net != 'any_ipv6':
+
+					# print(f'{unique_dp_name} - Network class "{net}" is not applied on any policy')	
+					with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+						bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+						bdos_writer.writerow([f'{unique_dp_name}' , f'{unique_name_dic_dp_ip}' , f'N/A' , f'Network class "{net}" is not applied on any policy'])
+
+				if timesfound > 1:
+
+					# print(f'{unique_dp_name} - Network classss "{net}" is shared across multiple policies {pol_count_list}')
+					with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+						bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+						bdos_writer.writerow([f'{unique_dp_name}' , f'{unique_name_dic_dp_ip}' , f'N/A' , f'Network classss "{net}" is shared across multiple policies {pol_count_list}'])
+
+		##########################Check if netclass is subnet of superclass or there are duplicate network classes###########
+
+		for pol_dic_dp_ip,pol_dic_dp_ip_attr in full_pol_dic.items(): ###Iterate through network classes
+			pol_dic_dp_name = pol_dic_dp_ip_attr['Name']
+
+			if pol_dic_dp_ip_attr['Policies'] == ([]):
+				#if unreachable
+				continue
+
+			if pol_dic_dp_ip_attr['Policies'] == ({'rsIDSNewRulesTable': []}):
+				#if no policies
+				continue
+
+			for pol_attr in pol_dic_dp_ip_attr['Policies']['rsIDSNewRulesTable']:
+				pol_dic_pol_name = pol_attr['rsIDSNewRulesName']
+				pol_dic_src = pol_attr['rsIDSNewRulesSource']
+				pol_dic_dst = pol_attr['rsIDSNewRulesDestination']
+
+
+
+				for net_dic_dp_ip,net_dic_dp_ip_attr in full_net_dic.items(): ###Iterate through policy list 
+					duplicate = 0
+					if net_dic_dp_ip_attr == ([]):
+						#if unreachable do not perform other tests
+						continue
+
+					for net_attr in net_dic_dp_ip_attr['rsBWMNetworkTable']: #for each netclass element
+
+						net_cl_name = net_attr['rsBWMNetworkName']
+						net_cl_address = net_attr['rsBWMNetworkAddress']
+						net_cl_mask = net_attr['rsBWMNetworkMask']
+						net_mode = net_attr['rsBWMNetworkMode']
+
+						ipv6 = False
+
+						if net_cl_name == 'any' or net_cl_name == 'any_ipv4' or net_cl_name == 'any_ipv6':
+							continue
+					
+						if net_dic_dp_ip == pol_dic_dp_ip:
+							
+							if net_cl_name == pol_dic_src or net_cl_name == pol_dic_dst: #only if netclass applied on policy
+
+								if net_mode == '2': #Corner case for network classes configured as ip ranges. Currently skip it
+									continue
+
+								if ":" in net_cl_address:
+									net_addrandmask = ipaddress.IPv6Network(net_cl_address + "/" + net_cl_mask)
+									ipv6 = True
+
+								else:
+									net_addrandmask = ipaddress.IPv4Network(net_cl_address + "/" + net_cl_mask)
+
+
+								for net_attr_2 in net_dic_dp_ip_attr['rsBWMNetworkTable']:#for each netclass element
+									net_mode_2 = net_attr_2['rsBWMNetworkMode']
+									net_cl_name_2 = net_attr_2['rsBWMNetworkName']
+									net_cl_address_2 = net_attr_2['rsBWMNetworkAddress']
+									net_cl_mask_2 = net_attr_2['rsBWMNetworkMask']
+
+
+									if net_cl_name_2 == 'any' or net_cl_name_2 == 'any_ipv4' or net_cl_name_2 == 'any_ipv6':
+										continue
+
+									if net_mode_2 == '2': #Corner case for network classes configured as ip ranges. Currently skip it
+										continue			
+									
+
+
+									if ":" in net_cl_address_2:
+										net_addrandmask_2 = ipaddress.IPv6Network(net_cl_address_2 + "/" + net_cl_mask_2)
+										ipv6 = True
+
+									else:
+										net_addrandmask_2 = ipaddress.IPv4Network(net_cl_address_2 + "/" + net_cl_mask_2)
+
+									if net_attr == net_attr_2:
+										continue
+
+									if (type(net_addrandmask) == ipaddress.IPv6Network) and (type(net_addrandmask_2) == ipaddress.IPv6Network):
+										if net_addrandmask.subnet_of(net_addrandmask_2) and net_addrandmask !=net_addrandmask_2: # search for subnet of
+											# print(f'{pol_dic_dp_name} Network class "{net_cl_name}" has a network subnet "{net_addrandmask}" which is subnet of "{net_addrandmask_2}" in another network class ' + net_cl_name_2)
+											with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+												bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+												bdos_writer.writerow([f'{pol_dic_dp_name}' , f'{pol_dic_dp_ip}' , f'{pol_dic_pol_name}' , f'Network class "{net_cl_name}" has a network subnet "{net_addrandmask}" which is subnet of "{net_addrandmask_2}" in another network class "{net_cl_name_2}"'])
+
+
+										if net_addrandmask == net_addrandmask_2 and duplicate == 0: # search for duplicate networks
+											duplicate +=1
+											# print(f'{pol_dic_dp_name} Duplicate network {net_addrandmask} in network classes {net_cl_name} and ' + net_cl_name_2)
+											with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+												bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+												bdos_writer.writerow([f'{pol_dic_dp_name}' , f'{pol_dic_dp_ip}' , f'{pol_dic_pol_name}' , f'Duplicate network {net_addrandmask} in network classes {net_cl_name} and "{net_cl_name_2}"'])
+
+
+
+
+									if (type(net_addrandmask) == ipaddress.IPv4Network) and (type(net_addrandmask_2) == ipaddress.IPv4Network):
+
+										if net_addrandmask.subnet_of(net_addrandmask_2) and net_addrandmask !=net_addrandmask_2: # search for subnet of
+											# print(f'{pol_dic_dp_name} Network class "{net_cl_name}" has a network subnet "{net_addrandmask}" which is subnet of "{net_addrandmask_2}" in another network class ' + net_cl_name_2)
+											with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+												bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+												bdos_writer.writerow([f'{pol_dic_dp_name}' , f'{pol_dic_dp_ip}' , f'{pol_dic_pol_name}' , f'Network class "{net_cl_name}" has a network subnet "{net_addrandmask}" which is subnet of "{net_addrandmask_2}" in another network class "{net_cl_name_2}"'])
+
+
+										if net_addrandmask == net_addrandmask_2 and duplicate == 0: # search for duplicate networks
+											duplicate +=1
+											# print(f'{pol_dic_dp_name} Duplicate network {net_addrandmask} in network classes {net_cl_name} and ' + net_cl_name_2)
+											with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+												bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+												bdos_writer.writerow([f'{pol_dic_dp_name}' , f'{pol_dic_dp_ip}' , f'{pol_dic_pol_name}' , f'Duplicate network {net_addrandmask} in network classes {net_cl_name} and "{net_cl_name_2}"'])
+
+		return

@@ -28,7 +28,9 @@ if not os.path.exists('Raw Data'):
 
 if not os.path.exists('Reports'):
 	os.makedirs('Reports')
-	
+
+if not os.path.exists('Config'):
+	os.makedirs('Config')
 
 logging_helper.log_setup(cfg.LOG_FILE_PATH, cfg.SYSLOG_SERVER, cfg.SYSLOG_PORT)
 
@@ -59,7 +61,7 @@ for i in sys.argv:
 
 
 if not getdatafromvision:
-	#If Script run with argument "--use-cache-data"
+
 	with open(raw_data_path + 'full_pol_dic.json') as full_pol_dic_file:
 		full_pol_dic = json.load(full_pol_dic_file)
 
@@ -82,13 +84,19 @@ if getdatafromvision:
 	full_sig_dic = v.getFullSignatureProfileDictionary()
 	logging_helper.logging.info('Collecting signature profiles data from all DefensePro')
 	print('Collecting signature profiles data from all DefensePro')
+
 	full_net_dic = v.getFullNetClassDictionary()
 	logging_helper.logging.info('Collecting network classes data from all DefensePro')
 	print('Collecting network classes data from all DefensePro')
+
 	full_bdosprofconf_dic = v.getFullBDOSProfConfigDictionary()
 	logging_helper.logging.info('Collecting BDOS configuration data from all DefensePro')
 	print('Collecting BDOS configuration data from all DefensePro')
 	
+	v.getAllDPConfigs()
+	logging_helper.logging.info('Downloading DefensePro configuration files')
+	print('Downloading DefensePro configuration files')
+
 	logging_helper.logging.info('Data collection is complete')
 	print('Data collection is complete')
 
