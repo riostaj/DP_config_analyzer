@@ -86,6 +86,7 @@ class Vision:
 		
 		if net_list.get("status") == "error":
 			logging.info("Error: " + net_list['message'])
+			print("Error: " + net_list['message'])
 			return []
 		return net_list
 
@@ -152,12 +153,17 @@ class Vision:
 
 	def getFullNetClassDictionary(self):
 		# Create Full Network class profile list with networks dictionary per DefensePro
-
+		print(self.device_list)
 		full_net_dic = {}
 		for key,value in self.device_list.items():
-	
-			full_net_dic[key] = self.getNetClassListByDevice(key)
+			full_net_dic[key] = {}
+			if self.getNetClassListByDevice(key) == ([]): #If DefensePro is unreachable
+				full_net_dic[key]['rsBWMNetworkTable'] = []
+			else:
+				full_net_dic[key] = self.getNetClassListByDevice(key)
+
 			full_net_dic[key]['Name'] = value['Name']
+			
 			
 		with open(raw_data_path + 'full_net_dic.json', 'w') as full_net_dic_file:
 			json.dump(full_net_dic,full_net_dic_file)

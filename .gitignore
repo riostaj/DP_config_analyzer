@@ -1,22 +1,8 @@
 config.py
 /.vscode/*
 /__pycache__/*
-
-no-bdos.txt
 log/monitor.log
-Reports/traffic_stats.csv
-Reports/low_bdos_baselines.csv
-Reports/high_bdos_baselines.csv
-Reports/dpconfig_report.csv
-Raw data/Traffic_report_BPS.json
-Raw data/BDOS_traffic_report.json
-Raw data/DNS_traffic_report.json
-Raw data/full_bdosprofconf_dic.json
-Raw data/full_net_dic.json
-Raw data/full_pol_dic.json
-Raw data/full_sig_dic.json
-Raw data/Traffic_report_CEC.json
-Raw data/Traffic_report_CPS.json
-Raw data/Traffic_report_PPS.json
-~$readme.docx
 *.tmp
+Config/*
+Reports/*
+Raw data/*

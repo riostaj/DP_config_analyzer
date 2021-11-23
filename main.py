@@ -77,31 +77,31 @@ if not getdatafromvision:
 if getdatafromvision:
 	v = Vision(cfg.VISION_IP, cfg.VISION_USER, cfg.VISION_PASS)
 	
-	full_pol_dic = v.getFullPolicyDictionary()
-	logging_helper.logging.info('Collecting policies data from all DefensePro')
 	print('Collecting policies data from all DefensePro')
+	logging_helper.logging.info('Collecting policies data from all DefensePro')
+	full_pol_dic = v.getFullPolicyDictionary()
 
-	full_sig_dic = v.getFullSignatureProfileDictionary()
-	logging_helper.logging.info('Collecting signature profiles data from all DefensePro')
 	print('Collecting signature profiles data from all DefensePro')
+	logging_helper.logging.info('Collecting signature profiles data from all DefensePro')
+	full_sig_dic = v.getFullSignatureProfileDictionary()
 
-	full_net_dic = v.getFullNetClassDictionary()
-	logging_helper.logging.info('Collecting network classes data from all DefensePro')
 	print('Collecting network classes data from all DefensePro')
+	logging_helper.logging.info('Collecting network classes data from all DefensePro')
+	full_net_dic = v.getFullNetClassDictionary()
 
-	full_bdosprofconf_dic = v.getFullBDOSProfConfigDictionary()
-	logging_helper.logging.info('Collecting BDOS configuration data from all DefensePro')
 	print('Collecting BDOS configuration data from all DefensePro')
+	logging_helper.logging.info('Collecting BDOS configuration data from all DefensePro')
+	full_bdosprofconf_dic = v.getFullBDOSProfConfigDictionary()
 	
-	v.getAllDPConfigs()
-	logging_helper.logging.info('Downloading DefensePro configuration files')
 	print('Downloading DefensePro configuration files')
+	logging_helper.logging.info('Downloading DefensePro configuration files')
+	v.getAllDPConfigs()
 
-	logging_helper.logging.info('Data collection is complete')
 	print('Data collection is complete')
+	logging_helper.logging.info('Data collection is complete')
 
-logging_helper.logging.info('Starting data parsing')
 print('Starting data parsing')
+logging_helper.logging.info('Starting data parsing')
 report.append(DataParser(full_pol_dic,full_sig_dic,full_net_dic,full_bdosprofconf_dic).run())
 
 
