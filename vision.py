@@ -153,7 +153,6 @@ class Vision:
 
 	def getFullNetClassDictionary(self):
 		# Create Full Network class profile list with networks dictionary per DefensePro
-		print(self.device_list)
 		full_net_dic = {}
 		for key,value in self.device_list.items():
 			full_net_dic[key] = {}
