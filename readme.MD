@@ -54,6 +54,7 @@ V2.2
 	2. Network class is unused(orphaned)
 	3. Same network class is shared with antoher policy
 	4. Network class has a duplicate network with another network class
+-	Added BDOS config check - UDP Packet sensitivity recommendation of "Low" or "Ignore or Disabled"
 
 # Functionality to be added:
 

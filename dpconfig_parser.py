@@ -323,7 +323,7 @@ class DataParser():
 					bdos_writer.writerow([f'{dp_name}' , f'{dp_ip}' , f'{pol_name}' , f'Signature profile "{pol_sig_prof_name}" does not include all the recommended "Dos-All" profile rules'])
 
 	def checkBDOSProf(self, pol_dp_ip, pol_dp_name, policy_list , full_bdosprofconf_dic):
-		#Check if BDOS profile is in report mode
+		#Check if BDOS profile configuration best practice
 			
 		for bdos_dp_ip, dp_attr in full_bdosprofconf_dic.items():
 
@@ -372,6 +372,19 @@ class DataParser():
 									with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
 										bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 										bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" Learning suppression is set to ' + bdos_prof['rsNetFloodProfileLearningSuppressionThreshold'] + '%. Recommended setting is 50%'])
+
+							if 'rsNetFloodProfileLevelOfReuglarzation' in bdos_prof: #BDOS UDP Sensitivity
+								if bdos_prof['rsNetFloodProfileLevelOfReuglarzation'] == '3': #1 = Ignore or Disable, 2 = Low , 3 = Medium, 4 = High
+									#print(f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" UDP Packet Rate Detection Sensitivity is set to "Medium" while recommended setting is "Low" or "Ignore or Disable".')
+									with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+										bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+										bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile {bdos_prof_name} UDP Packet Rate Detection Sensitivity is set to "Medium" while recommended setting is "Low" or "Ignore or Disable".'])
+
+								if bdos_prof['rsNetFloodProfileLevelOfReuglarzation'] == '4': #1 = Ignore or Disable, 2 = Low , 3 = Medium, 4 = High
+									# print(f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" UDP Packet Rate Detection Sensitivity is set to "High" while recommended setting is "Low" or "Ignore or Disable".')
+									with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+										bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+										bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile {bdos_prof_name} UDP Packet Rate Detection Sensitivity is set to "High" while recommended setting is "Low" or "Ignore or Disable".'])
 
 						else:
 							nomatch = True
@@ -511,7 +524,7 @@ class DataParser():
 	
 			if "!Software Version: 8" in content: # For software versions other than 8.x
 				if "manage web-services status set enable" in content:
-					print(f'{dp_ip} Web-services access is enabled. In most cases this service is required for external automation through SOAP calls. Disable if unnecessary. To disable - > "manage web-services status set disable"')
+					# print(f'{dp_ip} Web-services access is enabled. In most cases this service is required for external automation through SOAP calls. Disable if unnecessary. To disable - > "manage web-services status set disable"')
 					with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
 						bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 						bdos_writer.writerow([f'{dp_name}' , f'{dp_ip}' , f'N/A' , f'Web-services access is enabled. In most cases this service is required for external automation through SOAP calls. Disable if unnecessary. To disable - > "manage web-services status set disable"'])
