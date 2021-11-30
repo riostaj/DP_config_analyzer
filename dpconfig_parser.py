@@ -367,7 +367,7 @@ class DataParser():
 										bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" Footprint Strictness is not Medium'])
 						
 							if 'rsNetFloodProfileLearningSuppressionThreshold' in bdos_prof: #BDOS Learning suppression
-								if int(bdos_prof['rsNetFloodProfileLearningSuppressionThreshold']) < 50: #Less than 50%
+								if int(bdos_prof['rsNetFloodProfileLearningSuppressionThreshold']) < cfg.BDOS_LST: #Check if learning suppression is not less than desired (example 50 in %)
 									# print(f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" Learning suppression is set to ' + bdos_prof['rsNetFloodProfileLearningSuppressionThreshold'] + '%. Recommended setting is 50%')
 									with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
 										bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -450,6 +450,27 @@ class DataParser():
 									with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
 										bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 										bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" IGMP Flood protection is disabled".'])
+
+
+
+							if int(bdos_prof['rsNetFloodProfileBandwidthIn']) < cfg.BDOS_BW_IN: # Check if Outbound BDOS Bandwidth is set no lower than desered bandwidth
+								# print(f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" Inbound Traffic is set too low - ', int(int(bdos_prof['rsNetFloodProfileBandwidthIn'])/1000), f'Mbps vs minimum recommended {int(cfg.BDOS_BW_IN/1000)} Mbps.')
+								with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+									bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+									bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" Inbound Traffic is set too low - ' + str(int(int(bdos_prof['rsNetFloodProfileBandwidthIn'])/1000)) + f'Mbps vs minimum recommended {int(cfg.BDOS_BW_IN/1000)} Mbps.'])
+
+							if int(bdos_prof['rsNetFloodProfileBandwidthOut']) < cfg.BDOS_BW_OUT: # Check if Outbound BDOS BandWidth is set no lower than desered bandwidth
+								# print(f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" Outbound Traffic Inbound Traffic is set too low - ', int(int(bdos_prof['rsNetFloodProfileBandwidthIn'])/1000), f'Mbps vs minimum recommended {int(cfg.BDOS_BW_IN/1000)} Mbps.')
+								with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+									bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+									bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" Outbound Traffic Inbound Traffic is set too low - ' + str(int(int(bdos_prof['rsNetFloodProfileBandwidthIn'])/1000)) + f'Mbps vs minimum recommended {int(cfg.BDOS_BW_IN/1000)} Mbps.'])
+
+							if 'rsNetFloodProfileBurstEnabled' in bdos_prof:
+								if bdos_prof['rsNetFloodProfileBurstEnabled'] == '2': # Check if "Burst-Attack Protection" is enabled - 1 = Enable, 2 = Disable
+									# print(f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" - "Burst-Attack Protection" is disabled.')
+									with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+										bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+										bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" - "Burst-Attack Protection" is disabled.'])
 
 
 						else:

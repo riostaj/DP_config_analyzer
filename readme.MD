@@ -56,6 +56,10 @@ V2.2
 	4. Network class has a duplicate network with another network class
 -	Added BDOS config check - UDP Packet sensitivity recommendation of "Low" or "Ignore or Disabled"
 -	Added BDOS config check - Flood settings - check that every protocol is enabled (SYN, SYN+ACK, UDP, etc.)
+-	Added BDOS "Burst-Attack Protection" detection if enabled
+-	Added BDOS check if Inbound/Outbound traffic is not set lower than desired value (Default 100Mbps)
+-	Changed BDOS learning suppression to be configurable through config.cfg
+-	Updated config.cfg example
 # Functionality to be added:
 
 - Add connection limit profiles checking (Report/Block mode), orphaned

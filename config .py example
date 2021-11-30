@@ -12,7 +12,10 @@ SYSLOG_PORT = 514 # Syslog server destination UDP port
 
 #Device Security parameters
 
-SSH_TIMEOUT = 120 # SSH Timeout in minutes
+SSH_TIMEOUT = 120 # DefesePro SSH Timeout in minutes
+BDOS_LST = 50 # BDOS Learning Suppression in %
+BDOS_BW_IN = 100000 # BDOS Inbound Traffic Bandwidth setting in Kbps
+BDOS_BW_OUT = 100000 # BDOS Outbound Traffic Bandwidth setting in Kbps
 
 # Email set up parameters for sending email with reports
 SMTP_SERVER = "smtp.gmail.com" # SMTP server name
