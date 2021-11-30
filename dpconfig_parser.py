@@ -386,6 +386,72 @@ class DataParser():
 										bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 										bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile {bdos_prof_name} UDP Packet Rate Detection Sensitivity is set to "High" while recommended setting is "Low" or "Ignore or Disable".'])
 
+
+
+							if 'rsNetFloodProfileTcpSynStatus' in bdos_prof:
+								if bdos_prof['rsNetFloodProfileTcpSynStatus'] == '2': #1 = Enable, 2 = Disable
+									# print(f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" SYN flood protection is disabled.')
+									with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+										bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+										bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" SYN flood protection is disabled".'])
+
+							if 'rsNetFloodProfileTcpFinAckStatus' in bdos_prof:
+								if bdos_prof['rsNetFloodProfileTcpFinAckStatus'] == '2': #1 = Enable, 2 = Disable
+									# print(f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" TCP ACK + FIN Flood protection is disabled.')
+									with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+										bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+										bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" TCP ACK + FIN Flood protection is disabled".'])
+
+							if 'rsNetFloodProfileTcpRstStatus' in bdos_prof:
+								if bdos_prof['rsNetFloodProfileTcpRstStatus'] == '2': #1 = Enable, 2 = Disable
+									# print(f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" TCP RST Flood protection is disabled.')
+									with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+										bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+										bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" TCP RST Flood protection is disabled".'])
+
+							if 'rsNetFloodProfileTcpSynAckStatus' in bdos_prof:
+								if bdos_prof['rsNetFloodProfileTcpSynAckStatus'] == '2': #1 = Enable, 2 = Disable
+									# print(f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" TCP SYN + ACK Flood protection is disabled.')
+									with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+										bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+										bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" TCP SYN + ACK Flood protection is disabled".'])
+
+							if 'rsNetFloodProfileTcpFragStatus' in bdos_prof:
+								if bdos_prof['rsNetFloodProfileTcpFragStatus'] == '2': #1 = Enable, 2 = Disable
+									# print(f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" TCP Fragmentation Flood protection is disabled.')
+									with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+										bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+										bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" TCP Fragmentation Flood protection is disabled".'])
+
+							if 'rsNetFloodProfileUdpStatus' in bdos_prof:
+								if bdos_prof['rsNetFloodProfileUdpStatus'] == '2': #1 = Enable, 2 = Disable
+									# print(f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" UDP Flood protection is disabled.')
+									with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+										bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+										bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" UDP Flood protection is disabled".'])
+
+							if 'rsNetFloodProfileUdpFragStatus' in bdos_prof:
+								if bdos_prof['rsNetFloodProfileUdpFragStatus'] == '2': #1 = Enable, 2 = Disable
+									# print(f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" UDP Fragmentation Flood protection is disabled.')
+									with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+										bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+										bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" UDP Fragmentation Flood protection is disabled".'])
+
+							if 'rsNetFloodProfileIcmpStatus' in bdos_prof:
+								if bdos_prof['rsNetFloodProfileIcmpStatus'] == '2': #1 = Enable, 2 = Disable
+									# print(f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" ICMP Flood protection is disabled.')
+									with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+										bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+										bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" ICMP Flood protection is disabled".'])
+
+							if 'rsNetFloodProfileIgmpStatus' in bdos_prof:
+								if bdos_prof['rsNetFloodProfileIgmpStatus'] == '2': #1 = Enable, 2 = Disable
+									# print(f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" IGMP Flood protection is disabled.')
+									with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+										bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+										bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" IGMP Flood protection is disabled".'])
+
+
 						else:
 							nomatch = True
 

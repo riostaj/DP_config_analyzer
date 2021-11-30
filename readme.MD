@@ -55,7 +55,7 @@ V2.2
 	3. Same network class is shared with antoher policy
 	4. Network class has a duplicate network with another network class
 -	Added BDOS config check - UDP Packet sensitivity recommendation of "Low" or "Ignore or Disabled"
-
+-	Added BDOS config check - Flood settings - check that every protocol is enabled (SYN, SYN+ACK, UDP, etc.)
 # Functionality to be added:
 
 - Add connection limit profiles checking (Report/Block mode), orphaned
