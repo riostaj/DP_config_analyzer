@@ -60,12 +60,18 @@ V2.2
 -	Added BDOS check if Inbound/Outbound traffic is not set lower than desired value (Default 100Mbps)
 -	Changed BDOS learning suppression to be configurable through config.cfg
 -	Updated config.cfg example
+
+V2.3
+-	Signature sample rate
+-	SMTP_AUTH variable
+
 # Functionality to be added:
 
+
+- Add check if network class is in use by any of the ACL's- currently it checks only if it is applied on the policies
 - Add connection limit profiles checking (Report/Block mode), orphaned
 - Add traffic filters (report/block), orphaned
 - Add SYN Flood (report/block), orphaned
-- Signature sample rate
 - Add recommendation priority High/Med/Low to the final report
 - Add full configuration mapping with thresholds to a separate file
 

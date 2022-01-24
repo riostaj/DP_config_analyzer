@@ -587,7 +587,8 @@ class DataParser():
 
 	def parseDPConfig(self, dp_ip, dp_name):
 		#Parse DP config file for best practice configuration
-	##########Normalize config file############
+
+		##########Normalize config file############
 		with open(config_path + f'{dp_ip}_config.txt', 'r') as f:
 			config = f.read()
 		
@@ -595,7 +596,7 @@ class DataParser():
 
 		with open(config_path + f'{dp_ip}_config.txt', 'w') as f:
 			f.write(config) #Write updated lines
-	############################################
+		############################################
 
 
 		with open(config_path + f'{dp_ip}_config.txt') as f:
@@ -653,14 +654,31 @@ class DataParser():
 					bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 					bdos_writer.writerow([f'{dp_name}' , f'{dp_ip}' , f'N/A' , f'Telnet Access on port 23 is enabled. To disable - > "manage telnet status set disable"'])
 
+			if "dp signatures-protection dos-shield global sampling-rate-old set" not in content:
+				print(f'{dp_ip} - Signature dos-shield sampling rate is set to default 5001. Recommended dos-shield sampling rate for non heavy traffic volume devices is {str(cfg.SIG_SMPL_RATE)}. To set dos-shield sampling rate -> dp signatures-protection dos-shield global sampling-rate-old set X')
+				with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+					bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+					bdos_writer.writerow([f'{dp_name}' , f'{dp_ip}' , f'N/A' , f'Signature dos-shield sampling rate is set to default 5001. Recommended dos-shield sampling rate for non heavy traffic volume devices is {str(cfg.SIG_SMPL_RATE)}. To set dos-shield sampling rate -> dp signatures-protection dos-shield global sampling-rate-old set {str(cfg.SIG_SMPL_RATE)}'])
+
+
 			f.seek(0) #back to first line to parse line by line
 
-			for line in f:
+
+			####################Parsing config file line by line section###############
+			for line in f: #parse config file line by line
 				if "manage ssh session-timeout set" in line and f'manage ssh session-timeout set {str(cfg.SSH_TIMEOUT)}' not in line:
 					# print(f'{dp_ip} - SSH timeout is set to -' + str(line.split()[4]) + f' minutes. Recommended SSH timeout is {str(cfg.SSH_TIMEOUT)} min. To set SSH timeout -> manage ssh session-timeout set 120')
 					with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
 						bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 						bdos_writer.writerow([f'{dp_name}' , f'{dp_ip}' , f'N/A' , f'SSH timeout is set to ' + str(line.split()[4]) + f' minutes. Recommended SSH timeout is {str(cfg.SSH_TIMEOUT)} min. To set SSH timeout -> manage ssh session-timeout set {str(cfg.SSH_TIMEOUT)}'])
+
+				
+				if "dp signatures-protection dos-shield global sampling-rate-old set" in line and f'dp signatures-protection dos-shield global sampling-rate-old set {str(cfg.SIG_SMPL_RATE)}' not in line:
+					# print(line.split()[6])
+					# print(f'{dp_ip} - Signature dos-shield sampling rate is set to {str(line.split()[6])}. Recommended dos-shield sampling rate for non heavy traffic volume devices is {str(cfg.SIG_SMPL_RATE)}. To set dos-shield sampling rate -> dp signatures-protection dos-shield global sampling-rate-old set {str(cfg.SIG_SMPL_RATE)}')
+					with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+						bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+						bdos_writer.writerow([f'{dp_name}' , f'{dp_ip}' , f'N/A' , f'Signature dos-shield sampling rate is set to {str(line.split()[6])}. Recommended dos-shield sampling rate for non heavy traffic volume devices is {str(cfg.SIG_SMPL_RATE)}. To set dos-shield sampling rate -> dp signatures-protection dos-shield global sampling-rate-old set {str(cfg.SIG_SMPL_RATE)}'])
 
 	
 		return
