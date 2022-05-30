@@ -38,7 +38,7 @@ class Vision:
 			self.sess.headers.update({"JSESSIONID": response['jsessionid']})
 			# print("Auth Cookie is:  " + response['jsessionid'])
 		else:
-			logging.info('Login error: ' + response['message'])
+			logging.info('Vision Login error: ' + response['message'])
 			exit(1)
 
 	def getDeviceList(self):
@@ -60,7 +60,7 @@ class Vision:
 		sig_list = r.json()
 		
 		if sig_list.get("status") == "error":
-			logging.info("Error: " + sig_list['message'])
+			logging.info("Signature Profile list get error. DefensePro IP: " + dp_ip + ". Error message: " + sig_list['message'])
 			return []
 		return sig_list
 
@@ -72,7 +72,8 @@ class Vision:
 		bdos_config = r.json()
 		
 		if bdos_config.get("status") == "error":
-			logging.info("Error: " + bdos_config['message'])
+			logging.info("BDOS Profile list get error. DefensePro IP: " + dp_ip + ". Error message: " + bdos_config['message'])
+
 			return []
 		return bdos_config
 
@@ -85,8 +86,7 @@ class Vision:
 		net_list = r.json()
 		
 		if net_list.get("status") == "error":
-			logging.info("Error: " + net_list['message'])
-			print("Error: " + net_list['message'])
+			logging.info("Network class get error. DefensePro IP: " + dp_ip + ". Error message: " + net_list['message'])
 			return []
 		return net_list
 
@@ -99,7 +99,8 @@ class Vision:
 		policy_list = r.json()
 
 		if policy_list.get("status") == "error":
-			logging.info("Error: " + policy_list['message'])
+			logging.info("Policies list get error. DefensePro IP: " + dp_ip + ". Error message: " + policy_list['message'])
+
 			return []
 
 		return policy_list

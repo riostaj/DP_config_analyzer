@@ -64,6 +64,10 @@ V2.2
 V2.3
 -	Signature sample rate
 -	SMTP_AUTH variable
+-	Enhanced error logging while collecting the data
+
+V2.4
+-	5/30/22 Enhanced logging errors
 
 # Functionality to be added:
 

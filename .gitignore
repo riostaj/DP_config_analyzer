@@ -6,3 +6,4 @@ log/monitor.log
 Config/*
 Reports/*
 Raw data/*
+Container/*
