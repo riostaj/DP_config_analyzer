@@ -655,7 +655,7 @@ class DataParser():
 					bdos_writer.writerow([f'{dp_name}' , f'{dp_ip}' , f'N/A' , f'Telnet Access on port 23 is enabled. To disable - > "manage telnet status set disable"'])
 
 			if "dp signatures-protection dos-shield global sampling-rate-old set" not in content:
-				print(f'{dp_ip} - Signature dos-shield sampling rate is set to default 5001. Recommended dos-shield sampling rate for non heavy traffic volume devices is {str(cfg.SIG_SMPL_RATE)}. To set dos-shield sampling rate -> dp signatures-protection dos-shield global sampling-rate-old set X')
+				#print(f'{dp_ip} - Signature dos-shield sampling rate is set to default 5001. Recommended dos-shield sampling rate for non heavy traffic volume devices is {str(cfg.SIG_SMPL_RATE)}. To set dos-shield sampling rate -> dp signatures-protection dos-shield global sampling-rate-old set X')
 				with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
 					bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 					bdos_writer.writerow([f'{dp_name}' , f'{dp_ip}' , f'N/A' , f'Signature dos-shield sampling rate is set to default 5001. Recommended dos-shield sampling rate for non heavy traffic volume devices is {str(cfg.SIG_SMPL_RATE)}. To set dos-shield sampling rate -> dp signatures-protection dos-shield global sampling-rate-old set {str(cfg.SIG_SMPL_RATE)}'])
