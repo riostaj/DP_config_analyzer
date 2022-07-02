@@ -69,6 +69,9 @@ V2.3
 V2.4
 -	5/30/22 Enhanced logging errors
 
+V2.5
+-	7/2/22 Removed printing "Signature dos-shield sampling rate is set to default 5001"
+
 # Functionality to be added:
 
 
