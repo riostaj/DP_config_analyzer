@@ -77,6 +77,46 @@ class Vision:
 			return []
 		return bdos_config
 
+
+	def getSYNPProfileListByDevice(self, dp_ip):
+		# Returns BDOS profile config
+		policy_url = self.base_url + "/mgmt/device/byip/" + \
+			dp_ip + "/config/rsIDSSynProfilesTable?props=rsIDSSynProfilesName,rsIDSSynProfileServiceName"
+		r = self.sess.get(url=policy_url, verify=False)
+		synp_prof_list = r.json()
+		
+		if synp_prof_list.get("status") == "error":
+			logging.info("SYNP Profile list get error. DefensePro IP: " + dp_ip + ". Error message: " + synp_prof_list['message'])
+			# print("SYNP Profile list get error. DefensePro IP: " + dp_ip + ". Error message: " + synp_prof_list['message'])
+			return []
+		return synp_prof_list
+
+	def getSYNPProfileParamsByDevice(self, dp_ip):
+		# Returns BDOS profile config
+		url = self.base_url + "/mgmt/device/byip/" + \
+			dp_ip + "/config/rsIDSSynProfilesParamsTable"
+		r = self.sess.get(url=url, verify=False)
+		synp_prof_params_list = r.json()
+		
+		if synp_prof_params_list.get("status") == "error":
+			logging.info("SYN Flood Profiles parameters get error. DefensePro IP: " + dp_ip + ". Error message: " + synp_prof_params_list['message'])
+
+			return []
+		return synp_prof_params_list
+
+	def getSYNPProtectionsTableByDevice(self, dp_ip):
+		# Returns BDOS profile config
+		url = self.base_url + "/mgmt/device/byip/" + \
+			dp_ip + "/config/rsIDSSYNAttackTable"
+		r = self.sess.get(url=url, verify=False)
+		synp_protections_table = r.json()
+		
+		if synp_protections_table.get("status") == "error":
+			logging.info("SYN Flood Protections get error. DefensePro IP: " + dp_ip + ". Error message: " + synp_protections_table['message'])
+
+			return []
+		return synp_protections_table
+
 	def getNetClassListByDevice(self, dp_ip):
 		#Returns Network Class list with networks
 
@@ -184,3 +224,43 @@ class Vision:
 			json.dump(full_bdosprofconf_dic,full_bdosprofconf_dic_file)
 
 		return full_bdosprofconf_dic
+
+
+	def getFullSYNPConfigDictionary(self):
+		# Create Full BDOS Profile config list with all BDOS attributes dictionary per DefensePro
+
+		full_synpprofconf_dic = {}
+		
+		for dp_ip, val in self.device_list.items():
+			full_synpprofconf_dic[dp_ip] = {}
+			full_synpprofconf_dic[dp_ip]['Name'] = val['Name']
+			full_synpprofconf_dic[dp_ip]['Version'] = val['Version']
+
+			synp_prof_list = self.getSYNPProfileListByDevice(dp_ip)
+			synp_prof_params_table = self.getSYNPProfileParamsByDevice(dp_ip)
+			synp_protections_table = self.getSYNPProtectionsTableByDevice(dp_ip)
+
+			full_synpprofconf_dic[dp_ip]['Profiles'] = {}
+			
+			if synp_prof_params_table: #If table is not empty
+				for synp_prof_param_set in synp_prof_params_table['rsIDSSynProfilesParamsTable']:
+					full_synpprofconf_dic[dp_ip]['Profiles'][synp_prof_param_set['rsIDSSynProfilesParamsName']] = {}
+					full_synpprofconf_dic[dp_ip]['Profiles'][synp_prof_param_set['rsIDSSynProfilesParamsName']]['Parameters'] = synp_prof_param_set
+
+
+					full_synpprofconf_dic[dp_ip]['Profiles'][synp_prof_param_set['rsIDSSynProfilesParamsName']]['Protections'] = {}
+
+					for synp_prof in synp_prof_list['rsIDSSynProfilesTable']:
+						if synp_prof['rsIDSSynProfilesName'] == synp_prof_param_set['rsIDSSynProfilesParamsName']:
+						
+							for syn_protection in synp_protections_table['rsIDSSYNAttackTable']:
+								if syn_protection['rsIDSSYNAttackName'] == synp_prof['rsIDSSynProfileServiceName']:
+									full_synpprofconf_dic[dp_ip]['Profiles'][synp_prof_param_set['rsIDSSynProfilesParamsName']]['Protections'][syn_protection['rsIDSSYNAttackName']] = syn_protection
+
+
+
+		with open(raw_data_path + 'full_synprofconf_dic.json', 'w') as full_synpconf_dic_file:
+			json.dump(full_synpprofconf_dic,full_synpconf_dic_file)
+
+		return full_synpprofconf_dic
+

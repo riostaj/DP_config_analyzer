@@ -7,13 +7,14 @@ reports_path = "./Reports/"
 config_path = "./Config/"
 
 class DataParser():
-	def __init__(self, full_pol_dic, full_sig_dic, full_net_dic, full_bdosprofconf_dic):
+	def __init__(self, full_pol_dic, full_sig_dic, full_net_dic, full_bdosprofconf_dic,full_synprofconf_dic):
 		# with open('ful_pol_dic.txt') as fp:
 		# 	self.full_pol_dic = fp.read()
 		self.full_pol_dic = full_pol_dic
 		self.full_sig_dic = full_sig_dic
 		self.full_net_dic = full_net_dic
 		self.full_bdosprofconf_dic = full_bdosprofconf_dic
+		self.full_synprofconf_dic = full_synprofconf_dic
 		self.parseDict = {}
 
 		with open(reports_path + 'dpconfig_report.csv', mode='w', newline="") as dpconfig_report:
@@ -165,7 +166,8 @@ class DataParser():
 			
 
 			self.checkBDOSProf( dp_ip, dp_name, dp_attr['Policies']['rsIDSNewRulesTable'], self.full_bdosprofconf_dic)
-			
+			self.checkSYNPProf( dp_ip, dp_name, dp_attr['Policies']['rsIDSNewRulesTable'], self.full_synprofconf_dic)
+				
 				
 
 
@@ -335,7 +337,7 @@ class DataParser():
 			if dp_attr['Policies'] == ({'rsNetFloodProfileTable': []}):
 				# "DefensePro has no BDOS profiles"
 				continue
-
+			
 			for bdos_prof in dp_attr['Policies']['rsNetFloodProfileTable']:
 				bdos_count = 0
 				nomatch = False
@@ -486,6 +488,54 @@ class DataParser():
 					with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
 						bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 						bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'N/A' , f'BDOS Profile "{bdos_prof_name}" is not applied on any policy (orphaned)'])
+
+		return
+
+
+
+	def checkSYNPProf(self, pol_dp_ip, pol_dp_name, policy_list , full_synprofconf_dic):
+		#Check if BDOS profile configuration best practice
+			
+		for syn_dp_ip, dp_attr in full_synprofconf_dic.items():
+
+
+			if not dp_attr['Profiles']:
+				# "DefensePro is unreachable or has no SYN Flood Protection Profiles configured"
+				# print(f'DP {pol_dp_name} is unreachable or has no profiles')
+				continue
+			
+			for syn_prof, syn_prof_attr in dp_attr['Profiles'].items():
+				syn_count = 0
+				nomatch = False
+
+				for policy in policy_list:
+					
+					pol_prof_name = policy['rsIDSNewRulesProfileSynprotection']
+					pol_name = policy['rsIDSNewRulesName']
+
+					syn_prof_name = syn_prof
+					if pol_dp_ip == syn_dp_ip:
+						
+						if syn_prof_name == pol_prof_name:
+							syn_count +=1
+							if 'rsIDSSynProfilesAction' in syn_prof_attr['Parameters']: #Syn protection status (Block/Report)
+								if syn_prof_attr['Parameters']['rsIDSSynProfilesAction'] == "0": # 0 = Report
+									# print(f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'SYN Profile "{syn_prof_name}" is in Report-Only mode')
+									with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+										syn_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+										syn_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'SYN Profile "{syn_prof_name}" is in Report-Only mode'])
+
+				
+						else:
+							nomatch = True
+
+		
+				if syn_count == 0 and nomatch:
+					#Checks if the SYN profile is not applied on any policy
+					# print (f'{pol_dp_name} - SYN profile "{syn_prof_name}" is orphaned ')
+					with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+						syn_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+						syn_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'N/A' , f'SYN Profile "{syn_prof_name}" is not applied on any policy (orphaned)'])
 
 		return
 

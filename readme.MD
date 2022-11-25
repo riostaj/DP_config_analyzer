@@ -72,16 +72,19 @@ V2.4
 V2.5
 -	7/2/22 Removed printing "Signature dos-shield sampling rate is set to default 5001"
 
+V2.6
+- 	11/25/22 Added new feature
+		- Collecting the data for SYN Flood profiles
+		- Detection if SYN Flood profile is in Report mode
+		- Detection if SYN Flood profile is not applied on any policy (orphaned)
+
 # Functionality to be added:
 
-
+- Add full configuration mapping with thresholds to a separate file
 - Add check if network class is in use by any of the ACL's- currently it checks only if it is applied on the policies
 - Add connection limit profiles checking (Report/Block mode), orphaned
 - Add traffic filters (report/block), orphaned
-- Add SYN Flood (report/block), orphaned
 - Add recommendation priority High/Med/Low to the final report
-- Add full configuration mapping with thresholds to a separate file
-
 
 # Overview 
 
@@ -133,7 +136,8 @@ DefensePro Best Practice Configuration Recommendations report includes the follo
     b. Network class is unused(orphaned)
     c. Same network class is shared with antoher policy
     d. Network class has a duplicate network with another network class
-
+29.	SYN Flood profile is in report mode
+30.	SYN Flood profile is not applied on any policy(orphaned)
 
 
 # Setup

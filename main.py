@@ -74,6 +74,9 @@ if not getdatafromvision:
 	with open(raw_data_path + 'full_bdosprofconf_dic.json') as full_bdosprofconf_dic_file:
 		full_bdosprofconf_dic = json.load(full_bdosprofconf_dic_file)
 
+	with open(raw_data_path + 'full_synprofconf_dic.json') as full_synprofconf_dic_file:
+		full_synprofconf_dic = json.load(full_synprofconf_dic_file)
+
 if getdatafromvision:
 	v = Vision(cfg.VISION_IP, cfg.VISION_USER, cfg.VISION_PASS)
 	
@@ -92,7 +95,11 @@ if getdatafromvision:
 	print('Collecting BDOS configuration data from all DefensePro')
 	logging_helper.logging.info('Collecting BDOS configuration data from all DefensePro')
 	full_bdosprofconf_dic = v.getFullBDOSProfConfigDictionary()
-	
+
+	print('Collecting SynFlood configuration data from all DefensePro')
+	logging_helper.logging.info('Collecting SynFlood configuration data from all DefensePro')
+	full_synprofconf_dic = v.getFullSYNPConfigDictionary()
+
 	print('Downloading DefensePro configuration files')
 	logging_helper.logging.info('Downloading DefensePro configuration files')
 	v.getAllDPConfigs()
@@ -102,7 +109,7 @@ if getdatafromvision:
 
 print('Starting data parsing')
 logging_helper.logging.info('Starting data parsing')
-report.append(DataParser(full_pol_dic,full_sig_dic,full_net_dic,full_bdosprofconf_dic).run())
+report.append(DataParser(full_pol_dic,full_sig_dic,full_net_dic,full_bdosprofconf_dic,full_synprofconf_dic).run())
 
 
 if test_email_alarm:
