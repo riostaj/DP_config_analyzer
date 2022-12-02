@@ -3,8 +3,8 @@ import logging_helper
 import config as cfg
 import ipaddress
 
-reports_path = "./Reports/"
-config_path = "./Config/"
+reports_path = cfg.REPORTS_PATH
+config_path = cfg.CONFIG_PATH
 
 class DataParser():
 	def __init__(self, full_pol_dic, full_sig_dic, full_net_dic, full_bdosprofconf_dic,full_synprofconf_dic):
@@ -21,7 +21,12 @@ class DataParser():
 				bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 				bdos_writer.writerow(['DefensePro Name' , 'DefensePro IP' ,	'Policy' , 'Recommendation'])
 
+
+	
+
+
 	def run(self):
+
 		for dp_ip,dp_attr in self.full_pol_dic.items():
 			dp_name = dp_attr['Name']
 			self.initParser(dp_ip)
@@ -40,7 +45,7 @@ class DataParser():
 
 			for policy in dp_attr['Policies']['rsIDSNewRulesTable']: #key is rsIDSNewRulesTable, value is list of dictionary objects (each object is a dictionary which contains policy name and its attributes )
 				pol_name = policy['rsIDSNewRulesName']
-				bdos_prof_name = policy['rsIDSNewRulesProfileNetflood']
+				pol_bdos_prof_name = policy['rsIDSNewRulesProfileNetflood']
 				#Variables For Per Policy Iteration
 				no_prof_pol = False #used for defining policy with no profiles applied
 				# hbpolicy_src_net = False #used to identify Silicom bypass heartbeat policy
@@ -50,6 +55,9 @@ class DataParser():
 
 				#Init Policy Name
 				self.parseDict[dp_ip][policy['rsIDSNewRulesName']] = []
+
+
+
 
 				#Checks
 
@@ -207,6 +215,7 @@ class DataParser():
 	def isDPAvailable(self, dp_ip, dp_attr):
 		# DP is considerd unavailable if DP is unreachable or no policy exists
 		dp_name = dp_attr['Name']
+		
 		if dp_attr['Policies'] == ([]):
 			# self.parseDict[dp_ip] = "DefensePro is unreachable"
 			with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
@@ -362,7 +371,7 @@ class DataParser():
 										bdos_writer.writerow([f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" is in Report-Only mode'])
 
 							if 'rsNetFloodProfileFootprintStrictness' in bdos_prof: #BDOS Strictness
-								if bdos_prof['rsNetFloodProfileFootprintStrictness'] != "1": # 0= Low, 1 = Medium, 2 = Hight
+								if bdos_prof['rsNetFloodProfileFootprintStrictness'] != "1": # 0= Low, 1 = Medium, 2 = High
 									# print(f'{pol_dp_name}' , f'{pol_dp_ip}' , f'{pol_name}' , f'BDOS Profile "{bdos_prof_name}" Strictness is not Medium')
 									with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
 										bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)

@@ -1,7 +1,10 @@
 VISION_IP = "1.1.1.2" # APSolute Vision IP
 VISION_USER = "radware" # APSolute Vision username
 VISION_PASS = "radware" # APSolute Vision password
+MAP_CONFIG = True # True - Map DefensePro configuration to /Reports/dpconfig_map.csv, False - don't map configuration 
 
+REPORTS_PATH = "./Reports/" # Path to save reports
+CONFIG_PATH = "./Config/" # Path to save configuration
 
 # Log set up parameters
 LOG_FILE_PATH = "./log/" # folder to save the script logging events

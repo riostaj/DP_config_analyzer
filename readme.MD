@@ -78,9 +78,14 @@ V2.6
 		- Detection if SYN Flood profile is in Report mode
 		- Detection if SYN Flood profile is not applied on any policy (orphaned)
 
+3.0
+-	12/2/22 Added new functionality- DefensePro Configuration mapping .\Reports\dpconfig_map.csv
+		- This is includes DefensePro, Policy and BDOS profile mapping
+
 # Functionality to be added:
 
 - Add full configuration mapping with thresholds to a separate file
+	12/2/22 Added, so far includes DefensePro, Policy and BDOS profile mapping
 - Add check if network class is in use by any of the ACL's- currently it checks only if it is applied on the policies
 - Add connection limit profiles checking (Report/Block mode), orphaned
 - Add traffic filters (report/block), orphaned

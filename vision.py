@@ -77,6 +77,18 @@ class Vision:
 			return []
 		return bdos_config
 
+	def getDNSProfileConfigByDevice(self, dp_ip):
+		# Returns DNS profile config
+		policy_url = self.base_url + "/mgmt/device/byip/" + \
+			dp_ip + "/config/rsDnsProtProfileTable"
+		r = self.sess.get(url=policy_url, verify=False)
+		dns_config = r.json()
+		
+		if dns_config.get("status") == "error":
+			logging.info("DNS Profile list get error. DefensePro IP: " + dp_ip + ". Error message: " + dns_config['message'])
+
+			return []
+		return dns_config
 
 	def getSYNPProfileListByDevice(self, dp_ip):
 		# Returns BDOS profile config
@@ -224,6 +236,21 @@ class Vision:
 			json.dump(full_bdosprofconf_dic,full_bdosprofconf_dic_file)
 
 		return full_bdosprofconf_dic
+
+	def getFullDNSProfConfigDictionary(self):
+		# Create Full DNS Profile config list with all BDOS attributes dictionary per DefensePro
+
+		full_dnsprofconf_dic = {}
+		for key, val in self.device_list.items():
+			full_dnsprofconf_dic[key] = {}
+			full_dnsprofconf_dic[key]['Name'] = val['Name']
+			full_dnsprofconf_dic[key]['Version'] = val['Version']
+			full_dnsprofconf_dic[key]['Policies'] = self.getDNSProfileConfigByDevice(key)
+		
+		with open(raw_data_path + 'full_dnsprofconf_dic.json', 'w') as full_dnsprofconf_dic_file:
+			json.dump(full_dnsprofconf_dic,full_dnsprofconf_dic_file)
+
+		return full_dnsprofconf_dic
 
 
 	def getFullSYNPConfigDictionary(self):

@@ -2,6 +2,7 @@ import config as cfg
 import json
 from vision import Vision
 from dpconfig_parser import DataParser
+from dpconfig_mapper import DataMapper
 import urllib3
 import logging_helper
 import sys
@@ -74,6 +75,9 @@ if not getdatafromvision:
 	with open(raw_data_path + 'full_bdosprofconf_dic.json') as full_bdosprofconf_dic_file:
 		full_bdosprofconf_dic = json.load(full_bdosprofconf_dic_file)
 
+	with open(raw_data_path + 'full_dnsprofconf_dic.json') as full_dnsprofconf_dic_file:
+		full_dnsprofconf_dic = json.load(full_dnsprofconf_dic_file)
+
 	with open(raw_data_path + 'full_synprofconf_dic.json') as full_synprofconf_dic_file:
 		full_synprofconf_dic = json.load(full_synprofconf_dic_file)
 
@@ -96,6 +100,10 @@ if getdatafromvision:
 	logging_helper.logging.info('Collecting BDOS configuration data from all DefensePro')
 	full_bdosprofconf_dic = v.getFullBDOSProfConfigDictionary()
 
+	print('Collecting DNS configuration data from all DefensePro')
+	logging_helper.logging.info('Collecting DNS configuration data from all DefensePro')
+	full_dnsprofconf_dic = v.getFullDNSProfConfigDictionary()
+
 	print('Collecting SynFlood configuration data from all DefensePro')
 	logging_helper.logging.info('Collecting SynFlood configuration data from all DefensePro')
 	full_synprofconf_dic = v.getFullSYNPConfigDictionary()
@@ -111,7 +119,10 @@ print('Starting data parsing')
 logging_helper.logging.info('Starting data parsing')
 report.append(DataParser(full_pol_dic,full_sig_dic,full_net_dic,full_bdosprofconf_dic,full_synprofconf_dic).run())
 
-
+if cfg.MAP_CONFIG:
+	print('Starting config mapping')
+	report.append(DataMapper(full_pol_dic,full_sig_dic,full_net_dic,full_bdosprofconf_dic,full_synprofconf_dic,full_dnsprofconf_dic).run())
+	
 if test_email_alarm:
 	report = ['test']
 
