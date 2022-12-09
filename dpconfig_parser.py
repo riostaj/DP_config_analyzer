@@ -124,7 +124,7 @@ class DataParser():
 
 
 				if self.isOOSAppliedPolicy(dp_ip,policy['rsIDSNewRulesProfileStateful']) and not no_prof_pol:
-					# Check if Signature profile is applied on the policy
+					# Check if Out of State profile is applied on the policy
 					# self.parseDict[dp_ip][policy['rsIDSNewRulesName']].append("Out of State profile is not applied")
 					with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
 						bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)

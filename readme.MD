@@ -80,7 +80,64 @@ V2.6
 
 3.0
 -	12/2/22 Added new functionality- DefensePro Configuration mapping .\Reports\dpconfig_map.csv
-		- This is includes DefensePro, Policy and BDOS profile mapping
+		- This is includes DefensePro, Policy and BDOS profile mapping only
+
+3.1
+	12/9/22 Listed all common protection profiles (BDOS and DNS maps common settings as well).
+	Belos is the list of mapped objects:
+	
+		'DefensePro Name' 
+		'DefensePro IP' 
+		'DefensePro Version' 
+		'Policy Name'
+		'Policy Block/Report'
+		'Policy Packet Reporting'
+		'Signature Profile Name'
+		'Out of State Profile Name'
+		'Anti-Scanning Profile Name'
+		'EAAF Profile Name'
+		'Geolocaation Profile'
+		'Connection Limit Profile Name'
+		'SYN Flood Protection Profile'
+		'Traffic Filter Profile Name'
+		'BDOS Profile Name'
+		'BDOS Profile Block/Report'
+		'BDOS Profile Bandwidth'
+		'BDOS TCP Quota'
+		'BDOS UDP Quota'
+		'BDOS ICMP Quota'
+		'BDOS Transparent Optimization'
+		'BDOS Packet Reporting'
+		'BDOS Learning Suppression'
+		'BDOS Footprint Strictness'
+		'BDOS UDP Packet Rate Detection Sensitivity'
+		'BDOS Burst-Attack Protection'
+		'DNS Profile Name'
+		'DNS Block/Report'
+		'DNS Expected QPS'
+		'DNS Max Allowed QPS'
+		'DNS A Status'
+		'DNS A Quota'
+		'DNS MX Status'
+		'DNS MX Quota'
+		'DNS PTR Status'
+		'DNS PTR Quota'
+		'DNS AAAA Status'
+		'DNS AAAA Quota'
+		'DNS Text Status'
+		'DNS Text Quota'
+		'DNS SOA Status'
+		'DNS SOA Quota'
+		'DNS Naptr Status'
+		'DNS Naptr Quota'
+		'DNS SRV Status'
+		'DNS SRV Quota'
+		'DNS Other Status'
+		'DNS Other Quota'
+		'DNS Packet Reporting'
+		'DNS Learning Suppression'
+		'DNS Footprint Strictness'
+
 
 # Functionality to be added:
 
