@@ -84,8 +84,8 @@ V2.6
 
 3.1
 	12/9/22 Listed all common protection profiles (BDOS and DNS maps common settings as well).
-	Belos is the list of mapped objects:
-	
+	Below is the list of mapped objects:
+
 		'DefensePro Name' 
 		'DefensePro IP' 
 		'DefensePro Version' 
@@ -138,6 +138,9 @@ V2.6
 		'DNS Learning Suppression'
 		'DNS Footprint Strictness'
 
+3.2
+
+	- 2/28/23 Added mapping SYN Flood protection settings/thresholds
 
 # Functionality to be added:
 

@@ -17,14 +17,114 @@ class DataMapper():
 
 		with open(reports_path + 'dpconfig_map.csv', mode='w', newline="") as dpconfigmap_report:
 			dp_configmap_writer = csv.writer(dpconfigmap_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-			dp_configmap_writer.writerow(['DefensePro Name' , 'DefensePro IP' ,	'DefensePro Version' , 'Policy Name','Policy Block/Report', 'Policy Packet Reporting','Signature Profile Name','Out of State Profile Name','Anti-Scanning Profile Name', 'EAAF Profile Name','Geolocaation Profile','Connection Limit Profile Name','SYN Flood Protection Profile','Traffic Filter Profile Name','BDOS Profile Name','BDOS Profile Block/Report','BDOS Profile Bandwidth','BDOS TCP Quota','BDOS UDP Quota','BDOS ICMP Quota','BDOS Transparent Optimization','BDOS Packet Reporting','BDOS Learning Suppression','BDOS Footprint Strictness','BDOS UDP Packet Rate Detection Sensitivity','BDOS Burst-Attack Protection','DNS Profile Name','DNS Block/Report','DNS Expected QPS','DNS Max Allowed QPS','DNS A Status','DNS A Quota','DNS MX Status','DNS MX Quota','DNS PTR Status','DNS PTR Quota','DNS AAAA Status','DNS AAAA Quota','DNS Text Status','DNS Text Quota','DNS SOA Status','DNS SOA Quota','DNS Naptr Status','DNS Naptr Quota','DNS SRV Status','DNS SRV Quota','DNS Other Status','DNS Other Quota','DNS Packet Reporting','DNS Learning Suppression','DNS Footprint Strictness'])
+			dp_configmap_writer.writerow(['DefensePro Name' , 'DefensePro IP' ,	'DefensePro Version' , 'Policy Name','Policy Block/Report', 'Policy Packet Reporting','Signature Profile Name','Out of State Profile Name','Anti-Scanning Profile Name', 'EAAF Profile Name','Geolocaation Profile','Connection Limit Profile Name','SYN Flood Protection Profile','SYN Flood Profile Action','SYN Flood Network Authentication Method', 'SYN Flood HTTP Authentication','SYN Flood Protection Settings','Traffic Filter Profile Name','BDOS Profile Name','BDOS Profile Block/Report','BDOS Profile Bandwidth','BDOS TCP Quota','BDOS UDP Quota','BDOS ICMP Quota','BDOS Transparent Optimization','BDOS Packet Reporting','BDOS Learning Suppression','BDOS Footprint Strictness','BDOS UDP Packet Rate Detection Sensitivity','BDOS Burst-Attack Protection','DNS Profile Name','DNS Block/Report','DNS Expected QPS','DNS Max Allowed QPS','DNS A Status','DNS A Quota','DNS MX Status','DNS MX Quota','DNS PTR Status','DNS PTR Quota','DNS AAAA Status','DNS AAAA Quota','DNS Text Status','DNS Text Quota','DNS SOA Status','DNS SOA Quota','DNS Naptr Status','DNS Naptr Quota','DNS SRV Status','DNS SRV Quota','DNS Other Status','DNS Other Quota','DNS Packet Reporting','DNS Learning Suppression','DNS Footprint Strictness'])
 
 	def isDPAvailable(self, dp_ip,dp_attr):
 		# DP is considerd unavailable if DP is unreachable or no policy exists
 
-		if dp_attr['Policies'] == ([]):
-			return False
+		try:
+			if not dp_attr['Policies']:
+				print(f'{dp_ip} is not unavailable')
+				return False
+		except:
+			pass
+
+		try:
+			if dp_attr['Policies'] == None:
+				print(f'{dp_ip} is not unavailable')
+				return False
+		except:
+			pass
+
+		try:	
+			if not dp_attr['Profiles']:
+				print(f'{dp_ip} is not unavailable')
+				return False
+		except:
+			pass
+
 		return True
+
+
+	def map_synp_profile(self,dp_ip,pol_synp_prof_name):
+		#This function maps the bdos profiles to dpconfig_map.csv
+		synp_settings = []
+		synp_prot_values = ''
+
+		if pol_synp_prof_name == "": # If SYNP profile is not configured, pad all bdos fields with N/A values
+			synp_settings.append('')
+			synp_settings = synp_settings + self.na_list *4
+			
+
+		for synp_dp_ip, synp_dp_attr in self.full_synprofconf_dic.items():
+
+			if synp_dp_attr['Profiles']:
+				for synp_prof_key, syn_prof_val in synp_dp_attr['Profiles'].items():
+					synp_prof_name = synp_prof_key
+
+					if dp_ip == synp_dp_ip and pol_synp_prof_name == synp_prof_name:
+
+						synp_settings.append(synp_prof_name) # Append SYN Flood Protection Profile Name
+						
+
+
+						############# SYN Flood Protection Action Block/Report #############
+
+						if 'rsIDSSynProfilesAction' in syn_prof_val['Parameters']:
+							if syn_prof_val['Parameters']['rsIDSSynProfilesAction'] == '0':
+									synp_settings.append('Report Only')
+							elif syn_prof_val['Parameters']['rsIDSSynProfilesAction'] == '1':
+								synp_settings.append('Block and Report')
+
+						else:
+							synp_settings.append('N/A in this version')
+
+
+
+						############# SYN Flood Protection Authentication Method: #############
+
+						if 'rsIDSSynProfilesParamsAuthType' in syn_prof_val['Parameters']:
+							if syn_prof_val['Parameters']['rsIDSSynProfilesParamsAuthType'] == '1':
+								if syn_prof_val['Parameters']['rsIDSSynProfileTCPResetStatus'] == '2':
+									synp_settings.append('Safe Reset /Disabled "Use TCP Reset for Supported Protocols"')
+								elif syn_prof_val['Parameters']['rsIDSSynProfileTCPResetStatus'] == '1':
+									synp_settings.append('Safe Reset /Enabled "Use TCP Reset for Supported Protocols"')
+
+							elif syn_prof_val['Parameters']['rsIDSSynProfilesParamsAuthType'] == '2':
+								synp_settings.append('Transparent Proxy')
+
+						else:
+							synp_settings.append('N/A in this version')
+
+						############# SYN Flood Protection Application Level Authentication #############
+
+						if 'rsIDSSynProfilesParamsWebEnable' in syn_prof_val['Parameters']:
+							if syn_prof_val['Parameters']['rsIDSSynProfilesParamsWebEnable'] == '1':
+								if syn_prof_val['Parameters']['rsIDSSynProfilesParamsWebMethod'] == '1':
+									synp_settings.append('Use HTTP Authentication with 302-Redirect')
+
+								elif syn_prof_val['Parameters']['rsIDSSynProfilesParamsWebMethod'] == '2':
+									synp_settings.append('Use HTTP Authentication with JavaScript')
+
+								elif syn_prof_val['Parameters']['rsIDSSynProfilesParamsWebMethod'] == '3':
+									synp_settings.append('Use HTTP Authentication with Advanced JavaScript')
+
+							elif syn_prof_val['Parameters']['rsIDSSynProfilesParamsWebEnable'] == '2':
+								synp_settings.append('Disabled')
+
+						else:
+							synp_settings.append('N/A in this version')
+							
+
+						############# SYN Flood Protection Settings #############
+						
+						for synp_prof_prot in syn_prof_val['Protections']:
+
+							synp_prot_values = synp_prot_values + f'Protection Name: {synp_prof_prot["rsIDSSYNAttackName"]}\r\nProtection ID: {synp_prof_prot["rsIDSSYNAttackId"]}\r\nApplication Port Group: {synp_prof_prot["rsIDSSYNDestinationAppPortGroup"]}\r\nActivation Threshold: {synp_prof_prot["rsIDSSYNAttackActivationThreshold"]}\r\nTermination Threshold: {synp_prof_prot["rsIDSSYNAttackTerminationThreshold"]}\r\n------\r\n'
+
+						synp_settings.append(synp_prot_values)
+
+		return synp_settings
 
 	def map_bdos_profile(self,dp_ip,pol_bdos_prof_name):
 		#This function maps the bdos profiles to dpconfig_map.csv
@@ -37,91 +137,89 @@ class DataMapper():
 
 		for bdos_dp_ip, bdos_dp_attr in self.full_bdosprofconf_dic.items():
 
-			if not self.isDPAvailable(bdos_dp_ip, bdos_dp_attr):
-				continue
-
-			for bdos_prof in bdos_dp_attr['Policies']['rsNetFloodProfileTable']:
-				bdos_prof_name = bdos_prof['rsNetFloodProfileName']
-				
-				if dp_ip == bdos_dp_ip and pol_bdos_prof_name == bdos_prof_name:
-					bdos_settings.append(bdos_prof_name)
+			if bdos_dp_attr['Policies']:
+				for bdos_prof in bdos_dp_attr['Policies']['rsNetFloodProfileTable']:
+					bdos_prof_name = bdos_prof['rsNetFloodProfileName']
 					
-					########## Block/Report check#########
-					if 'rsNetFloodProfileAction' in bdos_prof:
-						if bdos_prof['rsNetFloodProfileAction'] == '0':
-							bdos_settings.append('Report')
-						elif bdos_prof['rsNetFloodProfileAction'] == '1':
-							bdos_settings.append('Block and Report')
+					if dp_ip == bdos_dp_ip and pol_bdos_prof_name == bdos_prof_name:
+						bdos_settings.append(bdos_prof_name)
 						
-					else:
-						bdos_settings.append('N/A in this version')
-					########## Map BDOS Bandwidth and Quota #########
-					bdos_settings.append(bdos_prof['rsNetFloodProfileBandwidthIn']) # Bandwidth
-					bdos_settings.append(bdos_prof['rsNetFloodProfileTcpInQuota'])
-					bdos_settings.append(bdos_prof['rsNetFloodProfileUdpInQuota'])
-					bdos_settings.append(bdos_prof['rsNetFloodProfileIcmpInQuota'])
+						########## Block/Report check#########
+						if 'rsNetFloodProfileAction' in bdos_prof:
+							if bdos_prof['rsNetFloodProfileAction'] == '0':
+								bdos_settings.append('Report')
+							elif bdos_prof['rsNetFloodProfileAction'] == '1':
+								bdos_settings.append('Block and Report')
+							
+						else:
+							bdos_settings.append('N/A in this version')
+						########## Map BDOS Bandwidth and Quota #########
+						bdos_settings.append(bdos_prof['rsNetFloodProfileBandwidthIn']) # Bandwidth
+						bdos_settings.append(bdos_prof['rsNetFloodProfileTcpInQuota'])
+						bdos_settings.append(bdos_prof['rsNetFloodProfileUdpInQuota'])
+						bdos_settings.append(bdos_prof['rsNetFloodProfileIcmpInQuota'])
 
-					########## BDOS Transparent optimization check#########
-					if 'rsNetFloodProfileTransparentOptimization' in bdos_prof:
-						if bdos_prof['rsNetFloodProfileTransparentOptimization'] == '1':
-							bdos_settings.append('Enabled')
-						if bdos_prof['rsNetFloodProfileTransparentOptimization'] == '2':
-							bdos_settings.append('Disabled')
-					else:
-						bdos_settings.append('N/A in this version')
-					#####################################
+						########## BDOS Transparent optimization check#########
+						if 'rsNetFloodProfileTransparentOptimization' in bdos_prof:
+							if bdos_prof['rsNetFloodProfileTransparentOptimization'] == '1':
+								bdos_settings.append('Enabled')
+							if bdos_prof['rsNetFloodProfileTransparentOptimization'] == '2':
+								bdos_settings.append('Disabled')
+						else:
+							bdos_settings.append('N/A in this version')
+						#####################################
 
 
-					########## BDOS Packet reporting check#########
-					if 'rsNetFloodProfilePacketReportStatus' in bdos_prof:
-						if bdos_prof['rsNetFloodProfilePacketReportStatus'] == '1':
-							bdos_settings.append('Enabled')
-						if bdos_prof['rsNetFloodProfilePacketReportStatus'] == '2':
-							bdos_settings.append('Disabled')
-					else:
-						bdos_settings.append('N/A in this version')
-					#####################################
+						########## BDOS Packet reporting check#########
+						if 'rsNetFloodProfilePacketReportStatus' in bdos_prof:
+							if bdos_prof['rsNetFloodProfilePacketReportStatus'] == '1':
+								bdos_settings.append('Enabled')
+							if bdos_prof['rsNetFloodProfilePacketReportStatus'] == '2':
+								bdos_settings.append('Disabled')
+						else:
+							bdos_settings.append('N/A in this version')
+						#####################################
 
-					########## BDOS Learning Suppression mapping #########
-					if 'rsNetFloodProfileLearningSuppressionThreshold' in bdos_prof:
-						bdos_settings.append(bdos_prof['rsNetFloodProfileLearningSuppressionThreshold'])
-					else:
-						bdos_settings.append('N/A in this version')
+						########## BDOS Learning Suppression mapping #########
+						if 'rsNetFloodProfileLearningSuppressionThreshold' in bdos_prof:
+							bdos_settings.append(bdos_prof['rsNetFloodProfileLearningSuppressionThreshold'])
+						else:
+							bdos_settings.append('N/A in this version')
 
-					########## BDOS Footprint Strictness #########
-					if 'rsNetFloodProfileFootprintStrictness' in bdos_prof:
-						if bdos_prof['rsNetFloodProfileFootprintStrictness'] == '0':
-							bdos_settings.append('Low')
-						if bdos_prof['rsNetFloodProfileFootprintStrictness'] == '1':
-							bdos_settings.append('Medium')
-						if bdos_prof['rsNetFloodProfileFootprintStrictness'] == '2':
-							bdos_settings.append('High')
-					else:
-						bdos_settings.append('N/A in this version')
-					#####################################
+						########## BDOS Footprint Strictness #########
+						if 'rsNetFloodProfileFootprintStrictness' in bdos_prof:
+							if bdos_prof['rsNetFloodProfileFootprintStrictness'] == '0':
+								bdos_settings.append('Low')
+							if bdos_prof['rsNetFloodProfileFootprintStrictness'] == '1':
+								bdos_settings.append('Medium')
+							if bdos_prof['rsNetFloodProfileFootprintStrictness'] == '2':
+								bdos_settings.append('High')
+						else:
+							bdos_settings.append('N/A in this version')
+						#####################################
 
-					########## BDOS UDP Packet Rate Detection Sensitivity #########
-					if 'rsNetFloodProfileLevelOfReuglarzation' in bdos_prof:
-						if bdos_prof['rsNetFloodProfileLevelOfReuglarzation'] == '1':
-							bdos_settings.append('Ignore or Disable')
-						if bdos_prof['rsNetFloodProfileLevelOfReuglarzation'] == '2':
-							bdos_settings.append('Low')
-						if bdos_prof['rsNetFloodProfileLevelOfReuglarzation'] == '3':
-							bdos_settings.append('Medium')
-						if bdos_prof['rsNetFloodProfileLevelOfReuglarzation'] == '4':
-							bdos_settings.append('High')
-					else:
-						bdos_settings.append('N/A in this version')
-					#####################################
+						########## BDOS UDP Packet Rate Detection Sensitivity #########
+						if 'rsNetFloodProfileLevelOfReuglarzation' in bdos_prof:
+							if bdos_prof['rsNetFloodProfileLevelOfReuglarzation'] == '1':
+								bdos_settings.append('Ignore or Disable')
+							if bdos_prof['rsNetFloodProfileLevelOfReuglarzation'] == '2':
+								bdos_settings.append('Low')
+							if bdos_prof['rsNetFloodProfileLevelOfReuglarzation'] == '3':
+								bdos_settings.append('Medium')
+							if bdos_prof['rsNetFloodProfileLevelOfReuglarzation'] == '4':
+								bdos_settings.append('High')
+						else:
+							bdos_settings.append('N/A in this version')
+						#####################################
 
-					########## BDOS Burst-Attack Protection #########
-					if 'rsNetFloodProfileBurstEnabled' in bdos_prof:
-						if bdos_prof['rsNetFloodProfileBurstEnabled'] == '1':
-							bdos_settings.append('Enabled')
-						if bdos_prof['rsNetFloodProfileBurstEnabled'] == '2':
-							bdos_settings.append('Disabled')
-					else:
-						bdos_settings.append('N/A in this version')
+						########## BDOS Burst-Attack Protection #########
+						if 'rsNetFloodProfileBurstEnabled' in bdos_prof:
+							if bdos_prof['rsNetFloodProfileBurstEnabled'] == '1':
+								bdos_settings.append('Enabled')
+							if bdos_prof['rsNetFloodProfileBurstEnabled'] == '2':
+								bdos_settings.append('Disabled')
+						else:
+							bdos_settings.append('N/A in this version')
 
 		return bdos_settings
 
@@ -140,118 +238,121 @@ class DataMapper():
 
 		for dns_dp_ip, dns_dp_attr in self.full_dnsprofconf_dic.items():
 
-			if not self.isDPAvailable(dns_dp_ip, dns_dp_attr):
-				continue
-
-			for dns_prof in dns_dp_attr['Policies']['rsDnsProtProfileTable']:
-				dns_prof_name = dns_prof['rsDnsProtProfileName']
-				
-				if dp_ip == dns_dp_ip and pol_dns_prof_name == dns_prof_name:
-					dns_settings.append(dns_prof_name)
+			if dns_dp_attr['Policies']:
+				for dns_prof in dns_dp_attr['Policies']['rsDnsProtProfileTable']:
+					dns_prof_name = dns_prof['rsDnsProtProfileName']
 					
-					########## DNS Block/Report check#########
-					if 'rsDnsProtProfileAction' in dns_prof:
-						if dns_prof['rsDnsProtProfileAction'] == '0':
-							dns_settings.append('Report')
-						elif dns_prof['rsDnsProtProfileAction'] == '1':
-							dns_settings.append('Block and Report')
+					if dp_ip == dns_dp_ip and pol_dns_prof_name == dns_prof_name:
+						dns_settings.append(dns_prof_name)
 						
-					else:
-						dns_settings.append('N/A in this version')
+						########## DNS Block/Report check#########
+						if 'rsDnsProtProfileAction' in dns_prof:
+							if dns_prof['rsDnsProtProfileAction'] == '0':
+								dns_settings.append('Report')
+							elif dns_prof['rsDnsProtProfileAction'] == '1':
+								dns_settings.append('Block and Report')
+							
+						else:
+							dns_settings.append('N/A in this version')
 
 
-					########## Map DNS QPS and Quota #########
-					dns_settings.append(dns_prof['rsDnsProtProfileExpectedQps']) # Bandwidth
-					dns_settings.append(dns_prof['rsDnsProtProfileMaxAllowQps'])
+						########## Map DNS QPS and Quota #########
+						dns_settings.append(dns_prof['rsDnsProtProfileExpectedQps']) # Bandwidth
+						dns_settings.append(dns_prof['rsDnsProtProfileMaxAllowQps'])
 
-					if dns_prof['rsDnsProtProfileDnsAStatus'] == '1':
-						dns_settings.append('Enabled')
-					elif dns_prof['rsDnsProtProfileDnsAStatus'] == '2':
-						dns_settings.append('Disabled')
-
-					dns_settings.append(dns_prof['rsDnsProtProfileDnsAQuota'])
-
-
-					if dns_prof['rsDnsProtProfileDnsMxStatus'] == '1':
-						dns_settings.append('Enabled')
-					elif dns_prof['rsDnsProtProfileDnsMxStatus'] == '2':
-						dns_settings.append('Disabled')
-
-					dns_settings.append(dns_prof['rsDnsProtProfileDnsMxQuota'])
-
-
-					if dns_prof['rsDnsProtProfileDnsPtrStatus'] == '1':
-						dns_settings.append('Enabled')
-					elif dns_prof['rsDnsProtProfileDnsPtrStatus'] == '2':
-						dns_settings.append('Disabled')
-					dns_settings.append(dns_prof['rsDnsProtProfileDnsPtrQuota'])
-
-					if dns_prof['rsDnsProtProfileDnsAaaaStatus'] == '1':
-						dns_settings.append('Enabled')
-					elif dns_prof['rsDnsProtProfileDnsAaaaStatus'] == '2':
-						dns_settings.append('Disabled')
-					dns_settings.append(dns_prof['rsDnsProtProfileDnsAaaaQuota'])
-
-					if dns_prof['rsDnsProtProfileDnsTextStatus'] == '1':
-						dns_settings.append('Enabled')
-					elif dns_prof['rsDnsProtProfileDnsTextStatus'] == '2':
-						dns_settings.append('Disabled')
-					dns_settings.append(dns_prof['rsDnsProtProfileDnsTextQuota'])
-
-					if dns_prof['rsDnsProtProfileDnsSoaStatus'] == '1':
-						dns_settings.append('Enabled')
-					elif dns_prof['rsDnsProtProfileDnsSoaStatus'] == '2':
-						dns_settings.append('Disabled')
-					dns_settings.append(dns_prof['rsDnsProtProfileDnsSoaQuota'])
-
-					if dns_prof['rsDnsProtProfileDnsNaptrStatus'] == '1':
-						dns_settings.append('Enabled')
-					elif dns_prof['rsDnsProtProfileDnsNaptrStatus'] == '2':
-						dns_settings.append('Disabled')
-					dns_settings.append(dns_prof['rsDnsProtProfileDnsNaptrQuota'])
-
-					if dns_prof['rsDnsProtProfileDnsSrvStatus'] == '1':
-						dns_settings.append('Enabled')
-					elif dns_prof['rsDnsProtProfileDnsSrvStatus'] == '2':
-						dns_settings.append('Disabled')
-					dns_settings.append(dns_prof['rsDnsProtProfileDnsSrvQuota'])
-
-					if dns_prof['rsDnsProtProfileDnsOtherStatus'] == '1':
-						dns_settings.append('Enabled')
-					elif dns_prof['rsDnsProtProfileDnsOtherStatus'] == '2':
-						dns_settings.append('Disabled')
-					dns_settings.append(dns_prof['rsDnsProtProfileDnsOtherQuota'])
-
-
-					########## DNS Packet reporting check#########
-					if 'rsDnsProtProfilePacketReportStatus' in dns_prof:
-						if dns_prof['rsDnsProtProfilePacketReportStatus'] == '1':
+						if dns_prof['rsDnsProtProfileDnsAStatus'] == '1':
 							dns_settings.append('Enabled')
-						if dns_prof['rsDnsProtProfilePacketReportStatus'] == '2':
+						elif dns_prof['rsDnsProtProfileDnsAStatus'] == '2':
 							dns_settings.append('Disabled')
-					else:
-						dns_settings.append('N/A')
-					#####################################
 
-					########## DNS Learning Suppression mapping #########
-					if 'rsDnsProtProfileLearningSuppressionThreshold' in dns_prof:
-						dns_settings.append(dns_prof['rsDnsProtProfileLearningSuppressionThreshold'])
-					else:
-						dns_settings.append('N/A in this version')
+						dns_settings.append(dns_prof['rsDnsProtProfileDnsAQuota'])
 
-					########## DNS Footprint Strictness #########
-					if 'rsDnsProtProfileFootprintStrictness' in dns_prof:
-						if dns_prof['rsDnsProtProfileFootprintStrictness'] == '0':
-							dns_settings.append('Low')
-						if dns_prof['rsDnsProtProfileFootprintStrictness'] == '1':
-							dns_settings.append('Medium')
-						if dns_prof['rsDnsProtProfileFootprintStrictness'] == '2':
-							dns_settings.append('High')
-					else:
-						dns_settings.append('N/A in this version')
-					#####################################
 
-		return dns_settings		
+						if dns_prof['rsDnsProtProfileDnsMxStatus'] == '1':
+							dns_settings.append('Enabled')
+						elif dns_prof['rsDnsProtProfileDnsMxStatus'] == '2':
+							dns_settings.append('Disabled')
+
+						dns_settings.append(dns_prof['rsDnsProtProfileDnsMxQuota'])
+
+
+						if dns_prof['rsDnsProtProfileDnsPtrStatus'] == '1':
+							dns_settings.append('Enabled')
+						elif dns_prof['rsDnsProtProfileDnsPtrStatus'] == '2':
+							dns_settings.append('Disabled')
+						dns_settings.append(dns_prof['rsDnsProtProfileDnsPtrQuota'])
+
+						if dns_prof['rsDnsProtProfileDnsAaaaStatus'] == '1':
+							dns_settings.append('Enabled')
+						elif dns_prof['rsDnsProtProfileDnsAaaaStatus'] == '2':
+							dns_settings.append('Disabled')
+						dns_settings.append(dns_prof['rsDnsProtProfileDnsAaaaQuota'])
+
+						if dns_prof['rsDnsProtProfileDnsTextStatus'] == '1':
+							dns_settings.append('Enabled')
+						elif dns_prof['rsDnsProtProfileDnsTextStatus'] == '2':
+							dns_settings.append('Disabled')
+						dns_settings.append(dns_prof['rsDnsProtProfileDnsTextQuota'])
+
+						if dns_prof['rsDnsProtProfileDnsSoaStatus'] == '1':
+							dns_settings.append('Enabled')
+						elif dns_prof['rsDnsProtProfileDnsSoaStatus'] == '2':
+							dns_settings.append('Disabled')
+						dns_settings.append(dns_prof['rsDnsProtProfileDnsSoaQuota'])
+
+						if dns_prof['rsDnsProtProfileDnsNaptrStatus'] == '1':
+							dns_settings.append('Enabled')
+						elif dns_prof['rsDnsProtProfileDnsNaptrStatus'] == '2':
+							dns_settings.append('Disabled')
+						dns_settings.append(dns_prof['rsDnsProtProfileDnsNaptrQuota'])
+
+						if dns_prof['rsDnsProtProfileDnsSrvStatus'] == '1':
+							dns_settings.append('Enabled')
+						elif dns_prof['rsDnsProtProfileDnsSrvStatus'] == '2':
+							dns_settings.append('Disabled')
+						dns_settings.append(dns_prof['rsDnsProtProfileDnsSrvQuota'])
+
+						if dns_prof['rsDnsProtProfileDnsOtherStatus'] == '1':
+							dns_settings.append('Enabled')
+						elif dns_prof['rsDnsProtProfileDnsOtherStatus'] == '2':
+							dns_settings.append('Disabled')
+						dns_settings.append(dns_prof['rsDnsProtProfileDnsOtherQuota'])
+
+
+						########## DNS Packet reporting check#########
+						if 'rsDnsProtProfilePacketReportStatus' in dns_prof:
+							if dns_prof['rsDnsProtProfilePacketReportStatus'] == '1':
+								dns_settings.append('Enabled')
+							if dns_prof['rsDnsProtProfilePacketReportStatus'] == '2':
+								dns_settings.append('Disabled')
+						else:
+							dns_settings.append('N/A')
+						#####################################
+
+						########## DNS Learning Suppression mapping #########
+						if 'rsDnsProtProfileLearningSuppressionThreshold' in dns_prof:
+							dns_settings.append(dns_prof['rsDnsProtProfileLearningSuppressionThreshold'])
+						else:
+							dns_settings.append('N/A in this version')
+
+						########## DNS Footprint Strictness #########
+						if 'rsDnsProtProfileFootprintStrictness' in dns_prof:
+							if dns_prof['rsDnsProtProfileFootprintStrictness'] == '0':
+								dns_settings.append('Low')
+							if dns_prof['rsDnsProtProfileFootprintStrictness'] == '1':
+								dns_settings.append('Medium')
+							if dns_prof['rsDnsProtProfileFootprintStrictness'] == '2':
+								dns_settings.append('High')
+						else:
+							dns_settings.append('N/A in this version')
+						#####################################
+
+		return dns_settings	
+
+
+
+			
+
 
 	def map_policy(self,dp_name,dp_ver,dp_ip,pol_name,policy):
 		policy_settings = []
@@ -358,11 +459,7 @@ class DataMapper():
 		############Mapping SYN Flood Protection Profile##########
 		if 'rsIDSNewRulesProfileSynprotection' in policy: # Check if SYN Flood Protection profile is configured
 			pol_synp_prof_name = policy['rsIDSNewRulesProfileSynprotection']
-
-			if pol_synp_prof_name == "":
-				policy_settings.append('')
-			else:
-				policy_settings.append(pol_synp_prof_name)
+			policy_settings = policy_settings + self.map_synp_profile(dp_ip,pol_synp_prof_name)
 
 		else:
 			policy_settings.append('N/A in this version')
@@ -422,14 +519,14 @@ class DataMapper():
 			dp_name = dp_attr['Name']
 			dp_ver = dp_attr['Version']
 
-			if not self.isDPAvailable(dp_ip,dp_attr):
-				continue
 
-			for policy in dp_attr['Policies']['rsIDSNewRulesTable']: #key is rsIDSNewRulesTable, value is list of dictionary objects (each object is a dictionary which contains policy name and its attributes )
-				pol_name = policy['rsIDSNewRulesName']
-				pol_bdos_prof_name = policy['rsIDSNewRulesProfileNetflood']
-				if pol_name != 'null':
-					self.map_policy(dp_name,dp_ver,dp_ip,pol_name,policy)
+			if self.isDPAvailable(dp_ip,dp_attr):
+
+				for policy in dp_attr['Policies']['rsIDSNewRulesTable']: #key is rsIDSNewRulesTable, value is list of dictionary objects (each object is a dictionary which contains policy name and its attributes )
+					pol_name = policy['rsIDSNewRulesName']
+					# pol_bdos_prof_name = policy['rsIDSNewRulesProfileNetflood']
+					if pol_name != 'null':
+						self.map_policy(dp_name,dp_ver,dp_ip,pol_name,policy)
 
 	
 
@@ -439,4 +536,4 @@ class DataMapper():
 		print('Config mapping is complete')
 
 		return report
-		
+

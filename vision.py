@@ -275,14 +275,14 @@ class Vision:
 					full_synpprofconf_dic[dp_ip]['Profiles'][synp_prof_param_set['rsIDSSynProfilesParamsName']]['Parameters'] = synp_prof_param_set
 
 
-					full_synpprofconf_dic[dp_ip]['Profiles'][synp_prof_param_set['rsIDSSynProfilesParamsName']]['Protections'] = {}
+					full_synpprofconf_dic[dp_ip]['Profiles'][synp_prof_param_set['rsIDSSynProfilesParamsName']]['Protections'] = []
 
 					for synp_prof in synp_prof_list['rsIDSSynProfilesTable']:
 						if synp_prof['rsIDSSynProfilesName'] == synp_prof_param_set['rsIDSSynProfilesParamsName']:
 						
 							for syn_protection in synp_protections_table['rsIDSSYNAttackTable']:
 								if syn_protection['rsIDSSYNAttackName'] == synp_prof['rsIDSSynProfileServiceName']:
-									full_synpprofconf_dic[dp_ip]['Profiles'][synp_prof_param_set['rsIDSSynProfilesParamsName']]['Protections'][syn_protection['rsIDSSYNAttackName']] = syn_protection
+									full_synpprofconf_dic[dp_ip]['Profiles'][synp_prof_param_set['rsIDSSynProfilesParamsName']]['Protections'].append(syn_protection)
 
 
 
