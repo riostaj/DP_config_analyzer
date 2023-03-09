@@ -117,7 +117,7 @@ class Vision:
 		return synp_prof_params_list
 
 	def getSYNPProtectionsTableByDevice(self, dp_ip):
-		# Returns BDOS profile config
+		# Returns SYNP profile config
 		url = self.base_url + "/mgmt/device/byip/" + \
 			dp_ip + "/config/rsIDSSYNAttackTable"
 		r = self.sess.get(url=url, verify=False)
@@ -128,6 +128,34 @@ class Vision:
 
 			return []
 		return synp_protections_table
+
+	def getConnlimrofileListByDevice(self, dp_ip):
+		# Returns BDOS profile config
+		policy_url = self.base_url + "/mgmt/device/byip/" + \
+			dp_ip + "/config/rsIDSConnectionLimitProfileTable"
+		r = self.sess.get(url=policy_url, verify=False)
+		connlim_prof_list = r.json()
+		
+		if connlim_prof_list.get("status") == "error":
+			logging.info("Connection Limit Profile list get error. DefensePro IP: " + dp_ip + ". Error message: " + connlim_prof_list['message'])
+			# print("Connection Limit Profile list get error. DefensePro IP: " + dp_ip + ". Error message: " + connlim_prof_list['message'])
+			return []
+		return connlim_prof_list
+	
+
+	def getConnlimProfileAttackTableByDevice(self, dp_ip):
+		# Returns Connlim profile config
+		url = self.base_url + "/mgmt/device/byip/" + \
+			dp_ip + "/config/rsIDSConnectionLimitAttackTable"
+		r = self.sess.get(url=url, verify=False)
+		connlim_prof_attacktable_list = r.json()
+		
+		if connlim_prof_attacktable_list.get("status") == "error":
+			logging.info("Connection Limit Profiles parameters get error. DefensePro IP: " + dp_ip + ". Error message: " + connlim_prof_attacktable_list['message'])
+
+			return []
+		return connlim_prof_attacktable_list
+
 
 	def getNetClassListByDevice(self, dp_ip):
 		#Returns Network Class list with networks
@@ -253,8 +281,9 @@ class Vision:
 		return full_dnsprofconf_dic
 
 
+
 	def getFullSYNPConfigDictionary(self):
-		# Create Full BDOS Profile config list with all BDOS attributes dictionary per DefensePro
+		# Create Full SYNP Profile config list with all BDOS attributes dictionary per DefensePro
 
 		full_synpprofconf_dic = {}
 		
@@ -291,3 +320,41 @@ class Vision:
 
 		return full_synpprofconf_dic
 
+
+	def getFullConnlimConfigDictionary(self):
+		# Create Full Connection Limit Profile config list with all BDOS attributes dictionary per DefensePro
+
+		full_connlimprofconf_dic = {}
+		
+		for dp_ip, val in self.device_list.items():
+			full_connlimprofconf_dic[dp_ip] = {}
+			full_connlimprofconf_dic[dp_ip]['Name'] = val['Name']
+			full_connlimprofconf_dic[dp_ip]['Version'] = val['Version']
+
+			connlim_prof_list = self.getConnlimrofileListByDevice(dp_ip)
+			connlim_prof_attack_table = self.getConnlimProfileAttackTableByDevice(dp_ip)
+
+
+			full_connlimprofconf_dic[dp_ip]['Profiles'] = {}
+			
+			if connlim_prof_list: #If table is not empty
+
+				for connlim_prof in connlim_prof_list['rsIDSConnectionLimitProfileTable']:
+
+					if full_connlimprofconf_dic[dp_ip]['Profiles'].get(connlim_prof['rsIDSConnectionLimitProfileName']) is None:
+						full_connlimprofconf_dic[dp_ip]['Profiles'][connlim_prof['rsIDSConnectionLimitProfileName']] = {}
+
+					if full_connlimprofconf_dic[dp_ip]['Profiles'][connlim_prof['rsIDSConnectionLimitProfileName']].get('Protections') is None:
+						full_connlimprofconf_dic[dp_ip]['Profiles'][connlim_prof['rsIDSConnectionLimitProfileName']]['Protections'] = []
+
+					for connlim_protectionid in connlim_prof_attack_table['rsIDSConnectionLimitAttackTable']:
+
+						if connlim_protectionid['rsIDSConnectionLimitAttackId'] == connlim_prof['rsIDSConnectionLimitProfileAttackId']:
+							full_connlimprofconf_dic[dp_ip]['Profiles'][connlim_prof['rsIDSConnectionLimitProfileName']]['Protections'].append(connlim_protectionid)
+					
+
+
+		with open(raw_data_path + 'full_connlimprofconf_dic.json', 'w') as full_connlimprofconf_file:
+			json.dump(full_connlimprofconf_dic,full_connlimprofconf_file)
+
+		return full_connlimprofconf_dic

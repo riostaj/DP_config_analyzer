@@ -6,18 +6,19 @@ import logging_helper
 reports_path = cfg.REPORTS_PATH
 
 class DataMapper():
-	def __init__(self, full_pol_dic, full_sig_dic, full_net_dic, full_bdosprofconf_dic,full_synprofconf_dic,full_dnsprofconf_dic):
+	def __init__(self, full_pol_dic, full_sig_dic, full_net_dic, full_bdosprofconf_dic, full_dnsprofconf_dic, full_synprofconf_dic, full_connlimprofconf_dic):
 		self.full_pol_dic = full_pol_dic
 		self.full_sig_dic = full_sig_dic
 		self.full_net_dic = full_net_dic
 		self.full_bdosprofconf_dic = full_bdosprofconf_dic
 		self.full_dnsprofconf_dic = full_dnsprofconf_dic
 		self.full_synprofconf_dic = full_synprofconf_dic
+		self.full_connlimprofconf_dic = full_connlimprofconf_dic
 		self.na_list = ['']
 
 		with open(reports_path + 'dpconfig_map.csv', mode='w', newline="") as dpconfigmap_report:
 			dp_configmap_writer = csv.writer(dpconfigmap_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-			dp_configmap_writer.writerow(['DefensePro Name' , 'DefensePro IP' ,	'DefensePro Version' , 'Policy Name','Policy Block/Report', 'Policy Packet Reporting','Signature Profile Name','Out of State Profile Name','Anti-Scanning Profile Name', 'EAAF Profile Name','Geolocaation Profile','Connection Limit Profile Name','SYN Flood Protection Profile','SYN Flood Profile Action','SYN Flood Network Authentication Method', 'SYN Flood HTTP Authentication','SYN Flood Protection Settings','Traffic Filter Profile Name','BDOS Profile Name','BDOS Profile Block/Report','BDOS Profile Bandwidth','BDOS TCP Quota','BDOS UDP Quota','BDOS ICMP Quota','BDOS Transparent Optimization','BDOS Packet Reporting','BDOS Learning Suppression','BDOS Footprint Strictness','BDOS UDP Packet Rate Detection Sensitivity','BDOS Burst-Attack Protection','DNS Profile Name','DNS Block/Report','DNS Expected QPS','DNS Max Allowed QPS','DNS A Status','DNS A Quota','DNS MX Status','DNS MX Quota','DNS PTR Status','DNS PTR Quota','DNS AAAA Status','DNS AAAA Quota','DNS Text Status','DNS Text Quota','DNS SOA Status','DNS SOA Quota','DNS Naptr Status','DNS Naptr Quota','DNS SRV Status','DNS SRV Quota','DNS Other Status','DNS Other Quota','DNS Packet Reporting','DNS Learning Suppression','DNS Footprint Strictness'])
+			dp_configmap_writer.writerow(['DefensePro Name' , 'DefensePro IP' ,	'DefensePro Version' , 'Policy Name','Policy Block/Report', 'Policy Packet Reporting','Signature Profile Name','Out of State Profile Name','Anti-Scanning Profile Name', 'EAAF Profile Name','Geolocaation Profile','Connection Limit Profile Name','Connection Limit Profile Protections and settings','SYN Flood Protection Profile','SYN Flood Profile Action','SYN Flood Network Authentication Method', 'SYN Flood HTTP Authentication','SYN Flood Protection Settings','Traffic Filter Profile Name','BDOS Profile Name','BDOS Profile Block/Report','BDOS Profile Bandwidth','BDOS TCP Quota','BDOS UDP Quota','BDOS ICMP Quota','BDOS Transparent Optimization','BDOS Packet Reporting','BDOS Learning Suppression','BDOS Footprint Strictness','BDOS UDP Packet Rate Detection Sensitivity','BDOS Burst-Attack Protection','DNS Profile Name','DNS Block/Report','DNS Expected QPS','DNS Max Allowed QPS','DNS A Status','DNS A Quota','DNS MX Status','DNS MX Quota','DNS PTR Status','DNS PTR Quota','DNS AAAA Status','DNS AAAA Quota','DNS Text Status','DNS Text Quota','DNS SOA Status','DNS SOA Quota','DNS Naptr Status','DNS Naptr Quota','DNS SRV Status','DNS SRV Quota','DNS Other Status','DNS Other Quota','DNS Packet Reporting','DNS Learning Suppression','DNS Footprint Strictness'])
 
 	def isDPAvailable(self, dp_ip,dp_attr):
 		# DP is considerd unavailable if DP is unreachable or no policy exists
@@ -55,76 +56,144 @@ class DataMapper():
 			synp_settings.append('')
 			synp_settings = synp_settings + self.na_list *4
 			
+		else:
+			for synp_dp_ip, synp_dp_attr in self.full_synprofconf_dic.items():
 
-		for synp_dp_ip, synp_dp_attr in self.full_synprofconf_dic.items():
+				if synp_dp_attr['Profiles']:
+					for synp_prof_key, syn_prof_val in synp_dp_attr['Profiles'].items():
+						synp_prof_name = synp_prof_key
 
-			if synp_dp_attr['Profiles']:
-				for synp_prof_key, syn_prof_val in synp_dp_attr['Profiles'].items():
-					synp_prof_name = synp_prof_key
+						if dp_ip == synp_dp_ip and pol_synp_prof_name == synp_prof_name:
 
-					if dp_ip == synp_dp_ip and pol_synp_prof_name == synp_prof_name:
-
-						synp_settings.append(synp_prof_name) # Append SYN Flood Protection Profile Name
-						
-
-
-						############# SYN Flood Protection Action Block/Report #############
-
-						if 'rsIDSSynProfilesAction' in syn_prof_val['Parameters']:
-							if syn_prof_val['Parameters']['rsIDSSynProfilesAction'] == '0':
-									synp_settings.append('Report Only')
-							elif syn_prof_val['Parameters']['rsIDSSynProfilesAction'] == '1':
-								synp_settings.append('Block and Report')
-
-						else:
-							synp_settings.append('N/A in this version')
-
-
-
-						############# SYN Flood Protection Authentication Method: #############
-
-						if 'rsIDSSynProfilesParamsAuthType' in syn_prof_val['Parameters']:
-							if syn_prof_val['Parameters']['rsIDSSynProfilesParamsAuthType'] == '1':
-								if syn_prof_val['Parameters']['rsIDSSynProfileTCPResetStatus'] == '2':
-									synp_settings.append('Safe Reset /Disabled "Use TCP Reset for Supported Protocols"')
-								elif syn_prof_val['Parameters']['rsIDSSynProfileTCPResetStatus'] == '1':
-									synp_settings.append('Safe Reset /Enabled "Use TCP Reset for Supported Protocols"')
-
-							elif syn_prof_val['Parameters']['rsIDSSynProfilesParamsAuthType'] == '2':
-								synp_settings.append('Transparent Proxy')
-
-						else:
-							synp_settings.append('N/A in this version')
-
-						############# SYN Flood Protection Application Level Authentication #############
-
-						if 'rsIDSSynProfilesParamsWebEnable' in syn_prof_val['Parameters']:
-							if syn_prof_val['Parameters']['rsIDSSynProfilesParamsWebEnable'] == '1':
-								if syn_prof_val['Parameters']['rsIDSSynProfilesParamsWebMethod'] == '1':
-									synp_settings.append('Use HTTP Authentication with 302-Redirect')
-
-								elif syn_prof_val['Parameters']['rsIDSSynProfilesParamsWebMethod'] == '2':
-									synp_settings.append('Use HTTP Authentication with JavaScript')
-
-								elif syn_prof_val['Parameters']['rsIDSSynProfilesParamsWebMethod'] == '3':
-									synp_settings.append('Use HTTP Authentication with Advanced JavaScript')
-
-							elif syn_prof_val['Parameters']['rsIDSSynProfilesParamsWebEnable'] == '2':
-								synp_settings.append('Disabled')
-
-						else:
-							synp_settings.append('N/A in this version')
+							synp_settings.append(synp_prof_name) # Append SYN Flood Protection Profile Name
 							
 
-						############# SYN Flood Protection Settings #############
-						
-						for synp_prof_prot in syn_prof_val['Protections']:
 
-							synp_prot_values = synp_prot_values + f'Protection Name: {synp_prof_prot["rsIDSSYNAttackName"]}\r\nProtection ID: {synp_prof_prot["rsIDSSYNAttackId"]}\r\nApplication Port Group: {synp_prof_prot["rsIDSSYNDestinationAppPortGroup"]}\r\nActivation Threshold: {synp_prof_prot["rsIDSSYNAttackActivationThreshold"]}\r\nTermination Threshold: {synp_prof_prot["rsIDSSYNAttackTerminationThreshold"]}\r\n------\r\n'
+							############# SYN Flood Protection Action Block/Report #############
 
-						synp_settings.append(synp_prot_values)
+							if 'rsIDSSynProfilesAction' in syn_prof_val['Parameters']:
+								if syn_prof_val['Parameters']['rsIDSSynProfilesAction'] == '0':
+										synp_settings.append('Report Only')
+								elif syn_prof_val['Parameters']['rsIDSSynProfilesAction'] == '1':
+									synp_settings.append('Block and Report')
+
+							else:
+								synp_settings.append('N/A in this version')
+
+
+
+							############# SYN Flood Protection Authentication Method: #############
+
+							if 'rsIDSSynProfilesParamsAuthType' in syn_prof_val['Parameters']:
+								if syn_prof_val['Parameters']['rsIDSSynProfilesParamsAuthType'] == '1':
+									if syn_prof_val['Parameters']['rsIDSSynProfileTCPResetStatus'] == '2':
+										synp_settings.append('Safe Reset /Disabled "Use TCP Reset for Supported Protocols"')
+									elif syn_prof_val['Parameters']['rsIDSSynProfileTCPResetStatus'] == '1':
+										synp_settings.append('Safe Reset /Enabled "Use TCP Reset for Supported Protocols"')
+
+								elif syn_prof_val['Parameters']['rsIDSSynProfilesParamsAuthType'] == '2':
+									synp_settings.append('Transparent Proxy')
+
+							else:
+								synp_settings.append('N/A in this version')
+
+							############# SYN Flood Protection Application Level Authentication #############
+
+							if 'rsIDSSynProfilesParamsWebEnable' in syn_prof_val['Parameters']:
+								if syn_prof_val['Parameters']['rsIDSSynProfilesParamsWebEnable'] == '1':
+									if syn_prof_val['Parameters']['rsIDSSynProfilesParamsWebMethod'] == '1':
+										synp_settings.append('Use HTTP Authentication with 302-Redirect')
+
+									elif syn_prof_val['Parameters']['rsIDSSynProfilesParamsWebMethod'] == '2':
+										synp_settings.append('Use HTTP Authentication with JavaScript')
+
+									elif syn_prof_val['Parameters']['rsIDSSynProfilesParamsWebMethod'] == '3':
+										synp_settings.append('Use HTTP Authentication with Advanced JavaScript')
+
+								elif syn_prof_val['Parameters']['rsIDSSynProfilesParamsWebEnable'] == '2':
+									synp_settings.append('Disabled')
+
+							else:
+								synp_settings.append('N/A in this version')
+								
+
+							############# SYN Flood Protection Settings #############
+							
+							for synp_prof_prot in syn_prof_val['Protections']:
+
+								synp_prot_values = synp_prot_values + f'Protection Name: {synp_prof_prot["rsIDSSYNAttackName"]}\r\nProtection ID: {synp_prof_prot["rsIDSSYNAttackId"]}\r\nApplication Port Group: {synp_prof_prot["rsIDSSYNDestinationAppPortGroup"]}\r\nActivation Threshold: {synp_prof_prot["rsIDSSYNAttackActivationThreshold"]}\r\nTermination Threshold: {synp_prof_prot["rsIDSSYNAttackTerminationThreshold"]}\r\n------\r\n'
+
+							synp_settings.append(synp_prot_values)
 
 		return synp_settings
+
+
+	def map_connlim_profile(self,dp_ip,pol_connlim_prof_name):
+		#This function maps the bdos profiles to dpconfig_map.csv
+		connlim_settings = [] #this will go to csv report
+		connlim_prot_values = ''
+
+		if pol_connlim_prof_name == "": # If Connection Limit profile is not configured, pad all bdos fields with N/A values
+			connlim_settings.append('')
+			connlim_settings = connlim_settings + self.na_list
+			
+		else:
+			for connlim_dp_ip, connlim_dp_attr in self.full_connlimprofconf_dic.items():
+
+				if connlim_dp_attr['Profiles']:
+					for connlim_prof_key, connlim_prof_val in connlim_dp_attr['Profiles'].items():
+						connlim_prof_name = connlim_prof_key
+
+						if dp_ip == connlim_dp_ip and pol_connlim_prof_name == connlim_prof_name:
+
+							connlim_settings.append(connlim_prof_name) # Append Connection limit Protection Profile Name
+							
+
+							############# Connection limit Protections Settings #############
+							
+							for connlim_prof_prot in connlim_prof_val['Protections']:
+
+								if connlim_prof_prot['rsIDSConnectionLimitAttackType']:
+									if connlim_prof_prot['rsIDSConnectionLimitAttackType'] == '1':
+										connlim_type = 'Connections per Second'
+									if connlim_prof_prot['rsIDSConnectionLimitAttackType'] == '2':
+										connlim_type = 'Concurrent Connections'
+
+
+								if connlim_prof_prot['rsIDSConnectionLimitAttackPacketReport']:
+									if connlim_prof_prot['rsIDSConnectionLimitAttackPacketReport'] == '1':
+										connlim_reporting = 'Enabled'
+									if connlim_prof_prot['rsIDSConnectionLimitAttackPacketReport'] == '2':
+										connlim_reporting = 'Disabled'
+
+
+								if connlim_prof_prot['rsIDSConnectionLimitAttackProtocol']:
+									if connlim_prof_prot['rsIDSConnectionLimitAttackProtocol'] == '2':
+										connlim_protoctol = 'TCP'
+									elif connlim_prof_prot['rsIDSConnectionLimitAttackProtocol'] == '3':
+										connlim_protoctol = 'UDP'
+
+								if connlim_prof_prot['rsIDSConnectionLimitAttackTrackingType']:
+
+									if connlim_prof_prot['rsIDSConnectionLimitAttackTrackingType'] == '2':
+										connlim_tracking_type = 'Source Count'
+									elif connlim_prof_prot['rsIDSConnectionLimitAttackTrackingType'] == '3':
+										connlim_tracking_type = 'Destination Count'
+									elif connlim_prof_prot['rsIDSConnectionLimitAttackTrackingType'] == '4':
+										connlim_tracking_type = 'Source and Destination Count'
+									elif connlim_prof_prot['rsIDSConnectionLimitAttackTrackingType'] == '5':
+										connlim_tracking_type = 'Count by Destination IP Address and Port'
+								if connlim_prof_prot["rsIDSConnectionLimitAttackReportMode"]:
+									if connlim_prof_prot["rsIDSConnectionLimitAttackReportMode"] == '0':
+										connlim_action = 'Report Only'
+									elif connlim_prof_prot["rsIDSConnectionLimitAttackReportMode"] == '10':
+										connlim_action = 'Drop'
+
+								connlim_prot_values = connlim_prot_values + f'Protection Name: {connlim_prof_prot["rsIDSConnectionLimitAttackName"]}\r\nProtection ID: {connlim_prof_prot["rsIDSConnectionLimitAttackId"]}\r\nProtection Type: {connlim_type}\r\nProtocol: {connlim_protoctol}\r\nThreshold: {connlim_prof_prot["rsIDSConnectionLimitAttackThreshold"]}\r\nTracking Type: {connlim_tracking_type}\r\nAction: {connlim_action}\r\nPacket Reporting: {connlim_reporting}\r\n------\r\n'
+
+							connlim_settings.append(connlim_prot_values)
+		return connlim_settings
+
 
 	def map_bdos_profile(self,dp_ip,pol_bdos_prof_name):
 		#This function maps the bdos profiles to dpconfig_map.csv
@@ -355,7 +424,7 @@ class DataMapper():
 
 
 	def map_policy(self,dp_name,dp_ver,dp_ip,pol_name,policy):
-		policy_settings = []
+		policy_settings = [] # this list will go to the csv file
 		policy_settings.append(dp_name)
 		policy_settings.append(dp_ip)
 		policy_settings.append(dp_ver)
@@ -441,16 +510,13 @@ class DataMapper():
 
 		else:
 			policy_settings.append('N/A in this version')
-		###############################################
+		######################################################
 
-		############Mapping Connection Limit Profile##########
+
+		############Mapping Connection Limit Protection Profile##########
 		if 'rsIDSNewRulesProfileConlmt' in policy: # Check if Connection Limit  profile is configured
 			pol_connlim_prof_name = policy['rsIDSNewRulesProfileConlmt']
-
-			if pol_connlim_prof_name == "":
-				policy_settings.append('')
-			else:
-				policy_settings.append(pol_connlim_prof_name)
+			policy_settings = policy_settings + self.map_connlim_profile(dp_ip,pol_connlim_prof_name)
 
 		else:
 			policy_settings.append('N/A in this version')

@@ -142,6 +142,10 @@ V2.6
 
 	- 2/28/23 Added mapping SYN Flood protection settings/thresholds
 
+3.3
+
+	- 3/9/23 Added mapping Connecion limit protection settings/thresholds
+
 # Functionality to be added:
 
 - Add full configuration mapping with thresholds to a separate file
