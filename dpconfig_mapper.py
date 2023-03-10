@@ -152,28 +152,32 @@ class DataMapper():
 							############# Connection limit Protections Settings #############
 							
 							for connlim_prof_prot in connlim_prof_val['Protections']:
-
-								if connlim_prof_prot['rsIDSConnectionLimitAttackType']:
+								
+								if 'rsIDSConnectionLimitAttackType' in connlim_prof_prot:
 									if connlim_prof_prot['rsIDSConnectionLimitAttackType'] == '1':
 										connlim_type = 'Connections per Second'
 									if connlim_prof_prot['rsIDSConnectionLimitAttackType'] == '2':
 										connlim_type = 'Concurrent Connections'
+								else:
+									connlim_type = 'N/A in this version'
 
-
-								if connlim_prof_prot['rsIDSConnectionLimitAttackPacketReport']:
+								if 'rsIDSConnectionLimitAttackPacketReport' in connlim_prof_prot:
 									if connlim_prof_prot['rsIDSConnectionLimitAttackPacketReport'] == '1':
 										connlim_reporting = 'Enabled'
 									if connlim_prof_prot['rsIDSConnectionLimitAttackPacketReport'] == '2':
 										connlim_reporting = 'Disabled'
+								else:
+									connlim_reporting = 'N/A in this version'
 
-
-								if connlim_prof_prot['rsIDSConnectionLimitAttackProtocol']:
+								if 'rsIDSConnectionLimitAttackProtocol' in connlim_prof_prot:
 									if connlim_prof_prot['rsIDSConnectionLimitAttackProtocol'] == '2':
 										connlim_protoctol = 'TCP'
 									elif connlim_prof_prot['rsIDSConnectionLimitAttackProtocol'] == '3':
 										connlim_protoctol = 'UDP'
-
-								if connlim_prof_prot['rsIDSConnectionLimitAttackTrackingType']:
+								else:
+									connlim_protoctol = 'N/A in this version'
+									
+								if 'rsIDSConnectionLimitAttackTrackingType' in connlim_prof_prot:
 
 									if connlim_prof_prot['rsIDSConnectionLimitAttackTrackingType'] == '2':
 										connlim_tracking_type = 'Source Count'
@@ -183,15 +187,23 @@ class DataMapper():
 										connlim_tracking_type = 'Source and Destination Count'
 									elif connlim_prof_prot['rsIDSConnectionLimitAttackTrackingType'] == '5':
 										connlim_tracking_type = 'Count by Destination IP Address and Port'
-								if connlim_prof_prot["rsIDSConnectionLimitAttackReportMode"]:
+								else:
+									connlim_tracking_type = 'N/A in this version'
+
+
+								if 'rsIDSConnectionLimitAttackReportMode' in connlim_prof_prot:
 									if connlim_prof_prot["rsIDSConnectionLimitAttackReportMode"] == '0':
 										connlim_action = 'Report Only'
 									elif connlim_prof_prot["rsIDSConnectionLimitAttackReportMode"] == '10':
 										connlim_action = 'Drop'
+								else:
+									connlim_action = 'N/A in this version'
+
 
 								connlim_prot_values = connlim_prot_values + f'Protection Name: {connlim_prof_prot["rsIDSConnectionLimitAttackName"]}\r\nProtection ID: {connlim_prof_prot["rsIDSConnectionLimitAttackId"]}\r\nProtection Type: {connlim_type}\r\nProtocol: {connlim_protoctol}\r\nThreshold: {connlim_prof_prot["rsIDSConnectionLimitAttackThreshold"]}\r\nTracking Type: {connlim_tracking_type}\r\nAction: {connlim_action}\r\nPacket Reporting: {connlim_reporting}\r\n------\r\n'
 
 							connlim_settings.append(connlim_prot_values)
+							
 		return connlim_settings
 
 

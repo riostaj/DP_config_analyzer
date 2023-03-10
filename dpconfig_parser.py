@@ -164,11 +164,13 @@ class DataParser():
 						hb_glob = self.isHBPolicy(dp_ip,policy,self.full_net_dic)
 
 				if catchall_pol and dp_version !=6:
-					if int(policy['rsIDSNewRulesPriority']) != lowest_pol_priority:
-						# self.parseDict[dp_ip][policy['rsIDSNewRulesName']].append(f'Catchall policy is not the least priority policy')
-						with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
-							bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-							bdos_writer.writerow([f'{dp_name}' , f'{dp_ip}' ,	f'{pol_name}' , 'Catchall policy is not the least priority policy'])
+					if policy['rsIDSNewRulesPriority'] != 'null':
+						# print(dp_ip,policy,'\r\n---')
+						if int(policy['rsIDSNewRulesPriority']) != lowest_pol_priority:
+							# self.parseDict[dp_ip][policy['rsIDSNewRulesName']].append(f'Catchall policy is not the least priority policy')
+							with open(reports_path + 'dpconfig_report.csv', mode='a', newline="") as dpconfig_report:
+								bdos_writer = csv.writer(dpconfig_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+								bdos_writer.writerow([f'{dp_name}' , f'{dp_ip}' ,	f'{pol_name}' , 'Catchall policy is not the least priority policy'])
 
 
 			
@@ -360,7 +362,7 @@ class DataParser():
 
 					if pol_dp_ip == bdos_dp_ip:
 						
-						if bdos_prof_name == pol_prof_name:
+						if bdos_prof_name == pol_prof_name and pol_name !='null':
 							bdos_count +=1
 							
 							if 'rsNetFloodProfileAction' in bdos_prof: #BDOS protection status (Block/Report)
