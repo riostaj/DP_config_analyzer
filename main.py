@@ -125,7 +125,10 @@ if getdatafromvision:
 
 print('Starting data parsing')
 logging_helper.logging.info('Starting data parsing')
-report.append(DataParser(full_pol_dic,full_sig_dic,full_net_dic,full_bdosprofconf_dic,full_synprofconf_dic).run())
+
+if cfg.ANALYZE_CONFIG:
+	print('Starting config analysis')
+	report.append(DataParser(full_pol_dic,full_sig_dic,full_net_dic,full_bdosprofconf_dic,full_synprofconf_dic).run())
 
 if cfg.MAP_CONFIG:
 	print('Starting config mapping')

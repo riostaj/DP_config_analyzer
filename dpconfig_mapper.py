@@ -63,12 +63,10 @@ class DataMapper():
 					for synp_prof_key, syn_prof_val in synp_dp_attr['Profiles'].items():
 						synp_prof_name = synp_prof_key
 
-						if dp_ip == synp_dp_ip and pol_synp_prof_name == synp_prof_name:
+						if dp_ip == synp_dp_ip and pol_synp_prof_name.lower() == synp_prof_name.lower():
 
 							synp_settings.append(synp_prof_name) # Append SYN Flood Protection Profile Name
 							
-
-
 							############# SYN Flood Protection Action Block/Report #############
 
 							if 'rsIDSSynProfilesAction' in syn_prof_val['Parameters']:
@@ -135,7 +133,7 @@ class DataMapper():
 
 		if pol_connlim_prof_name == "": # If Connection Limit profile is not configured, pad all bdos fields with N/A values
 			connlim_settings.append('')
-			connlim_settings = connlim_settings + self.na_list
+			connlim_settings = connlim_settings + self.na_list 
 			
 		else:
 			for connlim_dp_ip, connlim_dp_attr in self.full_connlimprofconf_dic.items():

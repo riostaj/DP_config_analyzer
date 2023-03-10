@@ -1,6 +1,8 @@
 VISION_IP = "1.1.1.2" # APSolute Vision IP
 VISION_USER = "radware" # APSolute Vision username
 VISION_PASS = "radware" # APSolute Vision password
+
+ANALYZE_CONFIG = True # True - Analyze DefensePro configuration to /Reports/dpconfig_report.csv, False - don't analyze configuration 
 MAP_CONFIG = True # True - Map DefensePro configuration to /Reports/dpconfig_map.csv, False - don't map configuration 
 
 REPORTS_PATH = "./Reports/" # Path to save reports

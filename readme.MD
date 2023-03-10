@@ -145,7 +145,7 @@ V2.6
 3.3
 
 	- 3/9/23 Added mapping Connecion limit protection settings/thresholds
-	- 3/10/23 Bugfixes (value null, non-existing connlim keys in older versions)
+	- 3/10/23 Bugfixes (value null, non-existing connlim keys in older versions), added configurable variable "ANALYZE_CONFIG" to config.py 
 
 # Functionality to be added:
 
