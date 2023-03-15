@@ -129,8 +129,8 @@ class Vision:
 			return []
 		return synp_protections_table
 
-	def getConnlimrofileListByDevice(self, dp_ip):
-		# Returns BDOS profile config
+	def getConnlimProfileListByDevice(self, dp_ip):
+		# Returns Connectlion limit profile config
 		policy_url = self.base_url + "/mgmt/device/byip/" + \
 			dp_ip + "/config/rsIDSConnectionLimitProfileTable"
 		r = self.sess.get(url=policy_url, verify=False)
@@ -156,6 +156,19 @@ class Vision:
 			return []
 		return connlim_prof_attacktable_list
 
+	def getOOSProfileListByDevice(self, dp_ip):
+		# Returns Out of State profile config
+		policy_url = self.base_url + "/mgmt/device/byip/" + \
+			dp_ip + "/config/rsStatefulProfileTable"
+		r = self.sess.get(url=policy_url, verify=False)
+		oos_prof_list = r.json()
+		
+		if oos_prof_list.get("status") == "error":
+			logging.info("Out of State Profile list get error. DefensePro IP: " + dp_ip + ". Error message: " + oos_prof_list['message'])
+			# print("Connection Limit Profile list get error. DefensePro IP: " + dp_ip + ". Error message: " + oos_prof_list['message'])
+			return []
+		
+		return oos_prof_list
 
 	def getNetClassListByDevice(self, dp_ip):
 		#Returns Network Class list with networks
@@ -322,7 +335,7 @@ class Vision:
 
 
 	def getFullConnlimConfigDictionary(self):
-		# Create Full Connection Limit Profile config list with all BDOS attributes dictionary per DefensePro
+		# Create Full Connection Limit Profile config list with all BDOS attributes dictionary per DefensePronnectionLimitProfileName
 
 		full_connlimprofconf_dic = {}
 		
@@ -331,7 +344,7 @@ class Vision:
 			full_connlimprofconf_dic[dp_ip]['Name'] = val['Name']
 			full_connlimprofconf_dic[dp_ip]['Version'] = val['Version']
 
-			connlim_prof_list = self.getConnlimrofileListByDevice(dp_ip)
+			connlim_prof_list = self.getConnlimProfileListByDevice(dp_ip)
 			connlim_prof_attack_table = self.getConnlimProfileAttackTableByDevice(dp_ip)
 
 
@@ -358,3 +371,30 @@ class Vision:
 			json.dump(full_connlimprofconf_dic,full_connlimprofconf_file)
 
 		return full_connlimprofconf_dic
+	
+	def getFullOOSConfigDictionary(self):
+		# Create Full Out of State Profile config list with all BDOS attributes dictionary per DefensePro
+
+		full_oosprofconf_dic = {}
+		
+		for dp_ip, val in self.device_list.items():
+			full_oosprofconf_dic[dp_ip] = {}
+			full_oosprofconf_dic[dp_ip]['Name'] = val['Name']
+			full_oosprofconf_dic[dp_ip]['Version'] = val['Version']
+
+			oos_prof_list = self.getOOSProfileListByDevice(dp_ip)
+
+
+			full_oosprofconf_dic[dp_ip]['Profiles'] = []
+			
+			if oos_prof_list: #If table is not empty
+
+				for oos_prof in oos_prof_list['rsStatefulProfileTable']:
+					
+					full_oosprofconf_dic[dp_ip]['Profiles'].append(oos_prof)	
+
+
+		with open(raw_data_path + 'full_oosprofconf_dic.json', 'w') as full_oosprofconf_file:
+			json.dump(full_oosprofconf_dic,full_oosprofconf_file)
+
+		return full_oosprofconf_dic

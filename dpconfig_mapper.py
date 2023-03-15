@@ -6,7 +6,7 @@ import logging_helper
 reports_path = cfg.REPORTS_PATH
 
 class DataMapper():
-	def __init__(self, full_pol_dic, full_sig_dic, full_net_dic, full_bdosprofconf_dic, full_dnsprofconf_dic, full_synprofconf_dic, full_connlimprofconf_dic):
+	def __init__(self, full_pol_dic, full_sig_dic, full_net_dic, full_bdosprofconf_dic, full_dnsprofconf_dic, full_synprofconf_dic, full_connlimprofconf_dic,full_oosprofconf_dic):
 		self.full_pol_dic = full_pol_dic
 		self.full_sig_dic = full_sig_dic
 		self.full_net_dic = full_net_dic
@@ -14,11 +14,22 @@ class DataMapper():
 		self.full_dnsprofconf_dic = full_dnsprofconf_dic
 		self.full_synprofconf_dic = full_synprofconf_dic
 		self.full_connlimprofconf_dic = full_connlimprofconf_dic
+		self.full_oosprofconf_dic = full_oosprofconf_dic
 		self.na_list = ['']
 
 		with open(reports_path + 'dpconfig_map.csv', mode='w', newline="") as dpconfigmap_report:
 			dp_configmap_writer = csv.writer(dpconfigmap_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-			dp_configmap_writer.writerow(['DefensePro Name' , 'DefensePro IP' ,	'DefensePro Version' , 'Policy Name','Policy Block/Report', 'Policy Packet Reporting','Signature Profile Name','Out of State Profile Name','Anti-Scanning Profile Name', 'EAAF Profile Name','Geolocaation Profile','Connection Limit Profile Name','Connection Limit Profile Protections and settings','SYN Flood Protection Profile','SYN Flood Profile Action','SYN Flood Network Authentication Method', 'SYN Flood HTTP Authentication','SYN Flood Protection Settings','Traffic Filter Profile Name','BDOS Profile Name','BDOS Profile Block/Report','BDOS Profile Bandwidth','BDOS TCP Quota','BDOS UDP Quota','BDOS ICMP Quota','BDOS Transparent Optimization','BDOS Packet Reporting','BDOS Learning Suppression','BDOS Footprint Strictness','BDOS UDP Packet Rate Detection Sensitivity','BDOS Burst-Attack Protection','DNS Profile Name','DNS Block/Report','DNS Expected QPS','DNS Max Allowed QPS','DNS A Status','DNS A Quota','DNS MX Status','DNS MX Quota','DNS PTR Status','DNS PTR Quota','DNS AAAA Status','DNS AAAA Quota','DNS Text Status','DNS Text Quota','DNS SOA Status','DNS SOA Quota','DNS Naptr Status','DNS Naptr Quota','DNS SRV Status','DNS SRV Quota','DNS Other Status','DNS Other Quota','DNS Packet Reporting','DNS Learning Suppression','DNS Footprint Strictness'])
+			dp_configmap_writer.writerow(['DefensePro Name' , 'DefensePro IP' ,	'DefensePro Version' , 'Policy Name','Policy Block/Report', 'Policy Packet Reporting',\
+				 'Signature Profile Name','Out of State Profile Name', 'Out of State Block/Report','Out of State Activation Threshold','Out of State Termination Threshold','Out of State Enable SYN-ACK','Anti-Scanning Profile Name', 'EAAF Profile Name',\
+					'Geolocaation Profile','Connection Limit Profile Name','Connection Limit Profile Protections and settings','SYN Flood Protection Profile',\
+						'SYN Flood Profile Action','SYN Flood Network Authentication Method','SYN Flood HTTP Authentication','SYN Flood Protection Settings',\
+							'Traffic Filter Profile Name','BDOS Profile Name','BDOS Profile Block/Report','BDOS Profile Bandwidth','BDOS TCP Quota',\
+							'BDOS UDP Quota','BDOS ICMP Quota','BDOS Transparent Optimization','BDOS Packet Reporting','BDOS Learning Suppression',\
+								'BDOS Footprint Strictness','BDOS UDP Packet Rate Detection Sensitivity','BDOS Burst-Attack Protection','DNS Profile Name',\
+									'DNS Block/Report','DNS Expected QPS','DNS Max Allowed QPS','DNS A Status','DNS A Quota','DNS MX Status','DNS MX Quota','DNS PTR Status',\
+									'DNS PTR Quota','DNS AAAA Status','DNS AAAA Quota','DNS Text Status','DNS Text Quota','DNS SOA Status','DNS SOA Quota','DNS Naptr Status',\
+										'DNS Naptr Quota','DNS SRV Status','DNS SRV Quota','DNS Other Status','DNS Other Quota','DNS Packet Reporting',\
+											'DNS Learning Suppression','DNS Footprint Strictness'])
 
 	def isDPAvailable(self, dp_ip,dp_attr):
 		# DP is considerd unavailable if DP is unreachable or no policy exists
@@ -127,7 +138,7 @@ class DataMapper():
 
 
 	def map_connlim_profile(self,dp_ip,pol_connlim_prof_name):
-		#This function maps the bdos profiles to dpconfig_map.csv
+		#This function maps the Out of State profiles to dpconfig_map.csv
 		connlim_settings = [] #this will go to csv report
 		connlim_prot_values = ''
 
@@ -203,6 +214,71 @@ class DataMapper():
 							connlim_settings.append(connlim_prot_values)
 							
 		return connlim_settings
+
+	def map_oos_profile(self,dp_ip,pol_oos_prof_name):
+		#This function maps the Out of State profiles to dpconfig_map.csv
+		oos_settings = [] #this will go to csv report
+
+		if pol_oos_prof_name == "": # If Out of State profile is not configured, pad all bdos fields with N/A values
+			oos_settings.append('')
+			oos_settings = oos_settings + self.na_list*5
+			
+		else:
+			for oos_dp_ip, oos_dp_attr in self.full_oosprofconf_dic.items():
+
+				if oos_dp_attr['Profiles']:
+					for oos_prof in oos_dp_attr['Profiles']:
+						oos_prof_name = oos_prof['rsSTATFULProfileName']
+
+						if dp_ip == oos_dp_ip and pol_oos_prof_name == oos_prof_name:
+
+							############# Out of State Profile name #############
+
+							oos_settings.append(oos_prof_name) # Append Out of State Protection Profile Name
+
+
+							############# Out of State Block/Report #############
+							
+							if 'rsSTATFULProfileAction' in oos_prof:
+								if oos_prof['rsSTATFULProfileAction'] == '1':
+									oos_action = 'Block and Report'
+								if oos_prof['rsSTATFULProfileAction'] == '0':
+									oos_action = 'Report Only'
+							else:
+								oos_action = 'N/A in this version'	
+
+							oos_settings.append(oos_action) # Append Out of State Protection Profile Name
+
+							############# Out of State Activation Threshold #############
+
+							if 'rsSTATFULProfileactThreshold' in oos_prof: # OOS Activation threshold
+								oos_settings.append(oos_prof['rsSTATFULProfileactThreshold']) 
+				
+							else:
+								oos_settings.append('N/A in this version')
+
+							############# Out of State Termination Threshold #############
+
+
+							if 'rsSTATFULProfiletermThreshold' in oos_prof: # OOS Termination threshold
+								oos_settings.append(oos_prof['rsSTATFULProfiletermThreshold']) 
+				
+							else:
+								oos_settings.append('N/A in this version')					
+
+							############# Out of State Allow SYN-ACK #############
+							
+							if 'rsSTATFULProfilesynAckAllow' in oos_prof:
+								if oos_prof['rsSTATFULProfilesynAckAllow'] == '1':
+									oos_ack_allow = 'Enabled'
+								if oos_prof['rsSTATFULProfilesynAckAllow'] == '2':
+									oos_ack_allow = 'Disabled'
+							else:
+								oos_ack_allow = 'N/A in this version'
+							
+							oos_settings.append(oos_ack_allow) # Append Out of State Protection Profile Name
+							
+		return oos_settings
 
 
 	def map_bdos_profile(self,dp_ip,pol_bdos_prof_name):
@@ -473,15 +549,12 @@ class DataMapper():
 		############Mapping Out of State Profile##########
 		if 'rsIDSNewRulesProfileStateful' in policy: # Check if OOS profile is configured
 			pol_oos_prof_name = policy['rsIDSNewRulesProfileStateful']
+			policy_settings = policy_settings + self.map_oos_profile(dp_ip,pol_oos_prof_name)
 
-			if pol_oos_prof_name == "":
-				policy_settings.append('')
-			else:
-				policy_settings.append(pol_oos_prof_name)
 
 		else:
 			policy_settings.append('N/A in this version')
-		###############################################
+		##################################################
 
 		############Mapping Anti-Scanning Profile##########
 		if 'rsIDSNewRulesProfileScanning' in policy: # Check if AS profile is configured

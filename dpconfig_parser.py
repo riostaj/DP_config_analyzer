@@ -7,7 +7,7 @@ reports_path = cfg.REPORTS_PATH
 config_path = cfg.CONFIG_PATH
 
 class DataParser():
-	def __init__(self, full_pol_dic, full_sig_dic, full_net_dic, full_bdosprofconf_dic,full_synprofconf_dic):
+	def __init__(self, full_pol_dic, full_sig_dic, full_net_dic, full_bdosprofconf_dic,full_synprofconf_dic,full_connlimprofconf_dic, full_oosprofconf_dic):
 		# with open('ful_pol_dic.txt') as fp:
 		# 	self.full_pol_dic = fp.read()
 		self.full_pol_dic = full_pol_dic
