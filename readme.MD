@@ -98,6 +98,9 @@ V2.6
 
 	- 3/15/23 Added mapping OOS main settings/thresholds
 
+3.5
+	- 3/16/23 Added Policy state Enabled/Disabled, OOS bugfix
+
 # Functionality to be added:
 
 - Add full configuration mapping with thresholds to a separate file

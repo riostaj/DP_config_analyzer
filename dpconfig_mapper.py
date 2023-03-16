@@ -19,7 +19,7 @@ class DataMapper():
 
 		with open(reports_path + 'dpconfig_map.csv', mode='w', newline="") as dpconfigmap_report:
 			dp_configmap_writer = csv.writer(dpconfigmap_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-			dp_configmap_writer.writerow(['DefensePro Name' , 'DefensePro IP' ,	'DefensePro Version' , 'Policy Name','Policy Block/Report', 'Policy Packet Reporting',\
+			dp_configmap_writer.writerow(['DefensePro Name' , 'DefensePro IP' ,	'DefensePro Version' , 'Policy Name','Policy State','Policy Block/Report', 'Policy Packet Reporting',\
 				 'Signature Profile Name','Out of State Profile Name', 'Out of State Block/Report','Out of State Activation Threshold','Out of State Termination Threshold','Out of State Enable SYN-ACK','Anti-Scanning Profile Name', 'EAAF Profile Name',\
 					'Geolocaation Profile','Connection Limit Profile Name','Connection Limit Profile Protections and settings','SYN Flood Protection Profile',\
 						'SYN Flood Profile Action','SYN Flood Network Authentication Method','SYN Flood HTTP Authentication','SYN Flood Protection Settings',\
@@ -212,7 +212,6 @@ class DataMapper():
 								connlim_prot_values = connlim_prot_values + f'Protection Name: {connlim_prof_prot["rsIDSConnectionLimitAttackName"]}\r\nProtection ID: {connlim_prof_prot["rsIDSConnectionLimitAttackId"]}\r\nProtection Type: {connlim_type}\r\nProtocol: {connlim_protoctol}\r\nThreshold: {connlim_prof_prot["rsIDSConnectionLimitAttackThreshold"]}\r\nTracking Type: {connlim_tracking_type}\r\nAction: {connlim_action}\r\nPacket Reporting: {connlim_reporting}\r\n------\r\n'
 
 							connlim_settings.append(connlim_prot_values)
-							
 		return connlim_settings
 
 	def map_oos_profile(self,dp_ip,pol_oos_prof_name):
@@ -221,7 +220,7 @@ class DataMapper():
 
 		if pol_oos_prof_name == "": # If Out of State profile is not configured, pad all bdos fields with N/A values
 			oos_settings.append('')
-			oos_settings = oos_settings + self.na_list*5
+			oos_settings = oos_settings + self.na_list*4
 			
 		else:
 			for oos_dp_ip, oos_dp_attr in self.full_oosprofconf_dic.items():
@@ -515,6 +514,16 @@ class DataMapper():
 		policy_settings.append(dp_ip)
 		policy_settings.append(dp_ver)
 		policy_settings.append(pol_name)
+
+
+		if 'rsIDSNewRulesState' in policy: # Check if policy Enabled/Disabled
+			if policy['rsIDSNewRulesState'] == '2':
+				policy_settings.append('Disabled')
+			elif policy['rsIDSNewRulesState'] == '1':
+				policy_settings.append('Enabled')
+
+		else:
+			policy_settings.append('N/A in this version')
 
 		if 'rsIDSNewRulesAction' in policy: # Check policy block/report action
 			if policy['rsIDSNewRulesAction'] == '0':
