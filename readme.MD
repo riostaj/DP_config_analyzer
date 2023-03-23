@@ -101,12 +101,14 @@ V2.6
 3.5
 	- 3/16/23 Added Policy state Enabled/Disabled, OOS bugfix
 
+3.6
+	- 3/23/23 Added mapping source and destination networks
+
 # Functionality to be added:
 
 - Add full configuration mapping with thresholds to a separate file
-	12/2/22 Added, so far includes DefensePro, Policy and BDOS profile mapping
 - Add check if network class is in use by any of the ACL's- currently it checks only if it is applied on the policies
-- Add connection limit profiles checking (Report/Block mode), orphaned
+- Add connection limit profiles are orphaned
 - Add traffic filters (report/block), orphaned
 - Add recommendation priority High/Med/Low to the final report
 

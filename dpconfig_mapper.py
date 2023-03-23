@@ -20,6 +20,7 @@ class DataMapper():
 		with open(reports_path + 'dpconfig_map.csv', mode='w', newline="") as dpconfigmap_report:
 			dp_configmap_writer = csv.writer(dpconfigmap_report, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 			dp_configmap_writer.writerow(['DefensePro Name' , 'DefensePro IP' ,	'DefensePro Version' , 'Policy Name','Policy State','Policy Block/Report', 'Policy Packet Reporting',\
+				 'SRC Network Profile Name','SRC Network Addresses','DST Network Profile Name','DST Network Addresses',\
 				 'Signature Profile Name','Out of State Profile Name', 'Out of State Block/Report','Out of State Activation Threshold','Out of State Termination Threshold','Out of State Enable SYN-ACK','Anti-Scanning Profile Name', 'EAAF Profile Name',\
 					'Geolocaation Profile','Connection Limit Profile Name','Connection Limit Profile Protections and settings','SYN Flood Protection Profile',\
 						'SYN Flood Profile Action','SYN Flood Network Authentication Method','SYN Flood HTTP Authentication','SYN Flood Protection Settings',\
@@ -278,7 +279,40 @@ class DataMapper():
 							oos_settings.append(oos_ack_allow) # Append Out of State Protection Profile Name
 							
 		return oos_settings
+	
+	def map_src_net_classes(self,dp_ip,pol_src_net_name):
+		#This function maps the Source networks to dpconfig_map.csv
+		src_net_classes_settings = [] #this will go to csv report
+		src_net_classes_list = ''
 
+		for netclass_dp_ip, net_class_dp_attr in self.full_net_dic.items():
+				
+				for net_class_block in net_class_dp_attr['rsBWMNetworkTable']:
+					net_class_name = net_class_block['rsBWMNetworkName']
+					if dp_ip == netclass_dp_ip and net_class_name == pol_src_net_name:
+						src_net_classes_list = src_net_classes_list + f"{net_class_block['rsBWMNetworkAddress']}/{net_class_block['rsBWMNetworkMask']}\r\n"
+
+		src_net_classes_settings.append(pol_src_net_name)
+		src_net_classes_settings.append(src_net_classes_list)
+
+		return src_net_classes_settings
+
+	def map_dst_net_classes(self,dp_ip,pol_dst_net_name):
+		#This function maps the Destination networks to dpconfig_map.csv
+		dst_net_classes_settings = [] #this will go to csv report
+		dst_net_classes_list = ''
+
+		for netclass_dp_ip, net_class_dp_attr in self.full_net_dic.items():
+				
+				for net_class_block in net_class_dp_attr['rsBWMNetworkTable']:
+					net_class_name = net_class_block['rsBWMNetworkName']
+					if dp_ip == netclass_dp_ip and net_class_name == pol_dst_net_name:
+						dst_net_classes_list = dst_net_classes_list + f"{net_class_block['rsBWMNetworkAddress']}/{net_class_block['rsBWMNetworkMask']}\r\n"
+
+		dst_net_classes_settings.append(pol_dst_net_name)
+		dst_net_classes_settings.append(dst_net_classes_list)
+
+		return dst_net_classes_settings
 
 	def map_bdos_profile(self,dp_ip,pol_bdos_prof_name):
 		#This function maps the bdos profiles to dpconfig_map.csv
@@ -504,7 +538,6 @@ class DataMapper():
 		return dns_settings	
 
 
-
 			
 
 
@@ -541,6 +574,55 @@ class DataMapper():
 				policy_settings.append('Disabled')
 		else:
 			policy_settings.append('N/A in this version')
+
+
+		############Mapping Source Networks##########
+
+		
+
+		pol_src_net_name = policy['rsIDSNewRulesSource'] # Get source network profile name
+
+		if pol_src_net_name != "any" and pol_src_net_name != "any_ipv4" and pol_src_net_name != "any_ipv6":
+			net_classes_src_map= self.map_src_net_classes(dp_ip,pol_src_net_name)
+			policy_settings = policy_settings + net_classes_src_map # Map source networks
+
+		else:
+
+			if pol_src_net_name == "any":
+				policy_settings.append('any')
+				policy_settings.append('any IPv4/IPv6')
+			
+			elif pol_src_net_name == "any_ipv4":
+				policy_settings.append('any_ipv4')
+				policy_settings.append('any IPv4')
+
+			elif pol_src_net_name == "any_ipv6":
+				policy_settings.append('any_ipv6')
+				policy_settings.append('any IPv6')
+
+		############Mapping Destination Networks##########
+
+		
+		pol_dst_net_name = policy['rsIDSNewRulesDestination'] # Get destination network profile name
+
+		if pol_dst_net_name != "any" and pol_dst_net_name != "any_ipv4" and pol_dst_net_name != "any_ipv6":
+			net_classes_dst_map= self.map_dst_net_classes(dp_ip,pol_dst_net_name)
+			policy_settings = policy_settings + net_classes_dst_map # Map destination networks
+
+		else:
+
+			if pol_dst_net_name == "any":
+				policy_settings.append('any')
+				policy_settings.append('any IPv4/IPv6')
+			
+			elif pol_dst_net_name == "any_ipv4":
+				policy_settings.append('any_ipv4')
+				policy_settings.append('any IPv4')
+
+			elif pol_dst_net_name == "any_ipv6":
+				policy_settings.append('any_ipv6')
+				policy_settings.append('any IPv6')
+
 
 		############Mapping Signature Profile##########
 		if 'rsIDSNewRulesProfileAppsec' in policy: # Check if BDOS profile is configured
