@@ -89,6 +89,10 @@ if not getdatafromvision:
 
 if getdatafromvision:
 	v = Vision(cfg.VISION_IP, cfg.VISION_USER, cfg.VISION_PASS)
+
+	print('Cleaning up previous DP config files')
+	logging_helper.logging.info('Cleaning up previous DP config files')
+	v.dpconfig_cleanup()
 	
 	print('Collecting policies data from all DefensePro')
 	logging_helper.logging.info('Collecting policies data from all DefensePro')

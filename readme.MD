@@ -104,6 +104,11 @@ V2.6
 3.6
 	- 3/23/23 Added mapping source and destination networks
 
+4.0
+	- Added choosing DefensePro Scope
+	- Added cleaning up existing DP config before collecting new ones
+	- Added writing device list to the raw json file
+
 # Functionality to be added:
 
 - Add full configuration mapping with thresholds to a separate file
