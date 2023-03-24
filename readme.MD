@@ -1,4 +1,4 @@
-#This is 1st change via web to pull in local PC
+#
 
 
 # DefensePro – Best Practice configuration analyzer:
